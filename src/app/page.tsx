@@ -174,178 +174,31 @@ export default function Home() {
         <table className="mt-10 w-full border-[1.5px] border-gray-900 rounded">
           <thead className="">
             <tr className="h-14">
-              <th>JCH</th>
+              <th className="w-[400px]">JCH</th>
               <th>ORIGINAL AFFILIATION</th>
               <th>INSPECTOR</th>
               <th>DATE & TIME</th>
               <th>STATUS</th>
-              <th></th>
+              <th className="w-16"></th>
             </tr>
           </thead>
           <tbody>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
-              <td>กองบิน 1</td>
-              <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Rejected</td>
-              <td>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 2.99976V8.99976H19"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+            <tr className="text-center h-14">
+              <td className="pl-4 text-left">
+                การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
-            </tr>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Pending Approve Task</td>
-              <td>
+              <td className="">June 06, 2024</td>
+              <td className="">Rejected</td>
+              <td className="">
                 <svg
                   width="24"
                   height="24"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 2.99976V8.99976H19"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </td>
-            </tr>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
-              <td>กองบิน 1</td>
-              <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Approved Task</td>
-              <td>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 2.99976V8.99976H19"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </td>
-            </tr>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
-              <td>กองบิน 1</td>
-              <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Pending Approve Repair</td>
-              <td>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 2.99976V8.99976H19"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </td>
-            </tr>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
-              <td>กองบิน 1</td>
-              <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Approved Repair</td>
-              <td>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 2.99976V8.99976H19"
-                    stroke="#111928"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </td>
-            </tr>
-            <tr className="h-14">
-              <td>การตรวจเช็คระบบเครื่องยนต์ด้านหลัง</td>
-              <td>กองบิน 1</td>
-              <td>ณิชาภัทร ธิติธนากร</td>
-              <td>June 06, 2024</td>
-              <td>Approved Repair</td>
-              <td>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                  className="place-self-center"
                 >
                   <path
                     d="M7 20.9998C6.46957 20.9998 5.96086 20.789 5.58579 20.414C5.21071 20.0389 5 19.5302 5 18.9998V2.99976H14L19 7.99976V18.9998C19 19.5302 18.7893 20.0389 18.4142 20.414C18.0391 20.789 17.5304 20.9998 17 20.9998H7Z"
