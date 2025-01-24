@@ -173,13 +173,13 @@ export default function Home() {
         {/*Table*/}
         <table className="mt-10 w-full border-separate border-spacing-[0px]">
           <thead className="">
-            <tr className="h-16 bg-slate-200">
+            <tr className="h-[70px]">
               <th className="min-w-[400px] border-t-[1.5px] border-l-[1.5px] border-gray-900 rounded-tl-xl">
                 JCH
               </th>
-              <th className="min-w-[250px] border-t-[1.5px] border-gray-900 hover:bg-slate-300">
-                <button className="flex w-full items-center justify-center">
-                  <div className="pr-3">ORIGINAL AFFILIATION</div>
+              <th className="min-w-[250px] border-t-[1.5px] border-gray-900">
+                <button className="flex m-auto">
+                  <span className="pr-3">ORIGINAL AFFILIATION</span>
                   <svg
                     width="8"
                     height="15"
@@ -195,9 +195,9 @@ export default function Home() {
                   </svg>
                 </button>
               </th>
-              <th className="min-w-[300px] border-t-[1.5px] border-gray-900 hover:bg-slate-300">
-                <button className="flex w-full items-center justify-center">
-                  <div className="pr-3">INSPECTOR</div>
+              <th className="min-w-[300px] border-t-[1.5px] border-gray-900">
+                <button className="flex m-auto">
+                  <span className="pr-3">INSPECTOR</span>
                   <svg
                     width="8"
                     height="15"
@@ -213,9 +213,9 @@ export default function Home() {
                   </svg>
                 </button>
               </th>
-              <th className="min-w-[150px] border-t-[1.5px] border-gray-900 hover:bg-slate-300">
-                <button className="flex w-full items-center justify-center">
-                  <div className="pr-3">DATE & TIME</div>
+              <th className="min-w-[150px] border-t-[1.5px] border-gray-900">
+                <button className="flex m-auto">
+                  <span className="pr-3">DATE & TIME</span>
                   <svg
                     width="8"
                     height="15"
@@ -231,9 +231,9 @@ export default function Home() {
                   </svg>
                 </button>
               </th>
-              <th className="min-w-[250px] border-t-[1.5px] border-gray-900 hover:bg-slate-300">
-                <button className="flex w-full items-center justify-center">
-                  <div className="pr-3">STATUS</div>
+              <th className="min-w-[250px] border-t-[1.5px] border-gray-900">
+                <button className="flex m-auto">
+                  <span className="pr-3">STATUS</span>
                   <svg
                     width="8"
                     height="15"
@@ -253,14 +253,18 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-[#FFEBEB] px-3 py-1 rounded-lg text-[#FF3939] font-bold">
+                  Rejected
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -288,14 +292,18 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-[#FAE3FF] px-3 py-1 rounded-lg text-[#FF43F2] font-bold">
+                  Pending Approve Task
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -323,14 +331,18 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-red-100 px-3 py-1 rounded-lg text-red-800 font-bold">
+                  Approved Task
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -358,14 +370,18 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-purple-100 px-3 py-1 rounded-lg text-purple-800 font-bold">
+                  Pending Approve Repair
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -393,14 +409,18 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-green-100 px-3 py-1 rounded-lg text-green-800 font-bold">
+                  Approved Repair
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -428,14 +448,18 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-l-[1.5px] border-gray-900">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-l-[1.5px] border-gray-900">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td>กองบิน 1</td>
               <td>ณิชาภัทร ธิติธนากร</td>
               <td className="">June 06, 2024</td>
-              <td className="">Rejected</td>
+              <td className="">
+                <span className="bg-purple-100 px-3 py-1 rounded-lg text-purple-800 font-bold">
+                  Pending Approve Repair
+                </span>
+              </td>
               <td className="border-r-[1.5px] border-gray-900">
                 <button>
                   <svg
@@ -463,8 +487,8 @@ export default function Home() {
                 </button>
               </td>
             </tr>
-            <tr className="text-center h-14 hover:bg-slate-100">
-              <td className="pl-4 text-left border-b-[1.5px] border-l-[1.5px] border-gray-900 rounded-bl-xl">
+            <tr className="text-center h-16 hover:bg-slate-100">
+              <td className="pl-8 text-left border-b-[1.5px] border-l-[1.5px] border-gray-900 rounded-bl-xl">
                 การตรวจเช็คระบบเครื่องยนต์ด้านหลัง
               </td>
               <td className="border-b-[1.5px] border-gray-900">กองบิน 1</td>
@@ -474,7 +498,11 @@ export default function Home() {
               <td className="border-b-[1.5px] border-gray-900">
                 June 06, 2024
               </td>
-              <td className="border-b-[1.5px] border-gray-900">Rejected</td>
+              <td className="border-b-[1.5px] border-gray-900">
+                <span className="bg-purple-100 px-3 py-1 rounded-lg text-purple-800 font-bold">
+                  Pending Approve Repair
+                </span>
+              </td>
               <td className="border-b-[1.5px] border-r-[1.5px] border-gray-900 rounded-br-xl">
                 <button>
                   <svg
@@ -504,6 +532,66 @@ export default function Home() {
             </tr>
           </tbody>
         </table>
+        {/*Pagination*/}
+        <div className="mt-10 flex justify-end items-center list-none h-10 text-lg min-w-[1500px]">
+          <li>
+            <a className="flex items-center mr-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12.2109 16.3333C11.9168 16.3333 11.6348 16.2105 11.4269 15.9919L6.99141 11.331C6.78353 11.1125 6.66675 10.8161 6.66675 10.5072C6.66675 10.1982 6.78353 9.90186 6.99141 9.68334L11.4269 5.0224C11.5292 4.91111 11.6516 4.82234 11.7869 4.76127C11.9222 4.7002 12.0677 4.66806 12.2149 4.66672C12.3621 4.66537 12.5082 4.69485 12.6444 4.75344C12.7807 4.81203 12.9045 4.89855 13.0086 5.00796C13.1127 5.11737 13.1951 5.24747 13.2508 5.39067C13.3066 5.53387 13.3347 5.68731 13.3334 5.84203C13.3321 5.99675 13.3015 6.14965 13.2434 6.29182C13.1853 6.43398 13.1008 6.56256 12.9949 6.67005L9.34335 10.5072L12.9949 14.3443C13.1499 14.5072 13.2555 14.7148 13.2983 14.9408C13.341 15.1668 13.3191 15.4011 13.2352 15.614C13.1512 15.8269 13.0092 16.0088 12.8268 16.1369C12.6445 16.2649 12.4302 16.3333 12.2109 16.3333Z"
+                  fill="#212529"
+                />
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a className="mr-2 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              1
+            </a>
+          </li>
+          <li>
+            <a className="mr-2 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              2
+            </a>
+          </li>
+          <li>
+            <a className="mr-2 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              3
+            </a>
+          </li>
+          <li>
+            <a className="mr-2 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              4
+            </a>
+          </li>
+          <li>
+            <a className="mr-2 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              5
+            </a>
+          </li>
+          <li>
+            <a className="flex items-center mr-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.78925 16.3333C7.56997 16.3333 7.35563 16.2649 7.17332 16.1369C6.99101 16.0088 6.84892 15.8269 6.76501 15.614C6.6811 15.4011 6.65914 15.1668 6.70191 14.9408C6.74467 14.7148 6.85024 14.5072 7.00528 14.3443L10.6568 10.5072L7.00528 6.67005C6.89937 6.56256 6.81489 6.43398 6.75677 6.29182C6.69866 6.14965 6.66807 5.99675 6.66679 5.84203C6.66551 5.68731 6.69357 5.53387 6.74932 5.39067C6.80508 5.24747 6.88742 5.11737 6.99153 5.00796C7.09565 4.89855 7.21946 4.81203 7.35573 4.75344C7.49201 4.69485 7.63803 4.66537 7.78526 4.66672C7.9325 4.66806 8.07801 4.7002 8.21329 4.76127C8.34858 4.82234 8.47094 4.91111 8.57323 5.0224L13.0087 9.68334C13.2166 9.90186 13.3334 10.1982 13.3334 10.5072C13.3334 10.8161 13.2166 11.1125 13.0087 11.331L8.57323 15.9919C8.36532 16.2105 8.08332 16.3333 7.78925 16.3333Z"
+                  fill="#212529"
+                />
+              </svg>
+            </a>
+          </li>
+        </div>
       </div>
     </div>
   );
