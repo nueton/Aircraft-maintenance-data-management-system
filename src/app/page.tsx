@@ -59,6 +59,48 @@ export default function Home() {
           <div className="self-center ml-5">IN PROGRESS</div>
         </button>
 
+        {/*third button*/}
+        <button className="flex w-full h-10 py-5 mt-8 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 22 22"
+            fill="none"
+            className="self-center w-10"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2.66669 12.2667L7.61907 17.3334L20 4.66675"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+
+          <div className="self-center ml-5">CHECKED</div>
+        </button>
+
+        {/*fourth button*/}
+        <button className="flex w-full h-10 py-5 mt-8 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 22 22"
+            fill="none"
+            className="self-center w-10"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.7647 2.58813L2.58826 18.7646M2.58826 2.58813L18.7647 18.7646"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+
+          <div className="self-center ml-5">NOT CHECKED</div>
+        </button>
+
         {/*bottom button*/}
         <button className="flex absolute bottom-5 w-full h-10 py-5 mt-8 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
           <svg
@@ -76,8 +118,8 @@ export default function Home() {
       </div>
 
       {/*top bar*/}
-      <div className="absolute right-5 left-[350px] top-0 h-[80px] min-w-[700px] font-mono font-medium content-center pr-5">
-        <div className="absolute right-5 flex flex-row">
+      <div className="absolute right-0 left-[350px] top-0 h-[80px] min-w-[700px] font-mono font-medium content-center">
+        <div className="absolute right-20 flex flex-row">
           <div className="text-gray-700">WELCOME,</div>
           <div className="text-blue-600 cursor-pointer">
             Nichapat Thitithanakorn
@@ -86,10 +128,10 @@ export default function Home() {
       </div>
 
       {/*middle*/}
-      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono p-12 pl-20">
+      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12">
         <div className="text-5xl font-semibold pb-14">TASKS</div>
         {/*serch group*/}
-        <div className="flex flex-row relative w-full min-w-[700px]">
+        <div className="flex flex-row relative w-full min-w-[1430px] pt-1">
           <Menu>
             <MenuButton className="inline-flex items-center py-2 pl-5 pr-3 text-base font-medium text-center text-gray-900 hover:text-white hover:bg-slate-500 border-[1.5px] hover:border-slate-500 border-gray-900 rounded-s-xl stroke-gray-900 hover:stroke-white ease-in duration-75">
               <p className="mr-2 text-nowrap">All categories</p>
