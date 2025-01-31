@@ -84,8 +84,9 @@ export default function Home() {
       </div>
 
       {/*middle*/}
-      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12">
+      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12 overflow-auto">
         <div className="text-5xl font-semibold pb-14">CREATE NEW TASK</div>
+        <div></div>
         {/*Detail*/}
         <div className="flex flex-col relative w-full pt-3">
           <span className="text-2xl">DETAIL</span>
@@ -94,26 +95,26 @@ export default function Home() {
             <div className="w-1/2 mr-48">
               <div className="flex flex-col h-[80px]">
                 ORIGIANL AFFILIATION
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
               <div className="flex flex-col h-[80px] mt-6">
                 JCH
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
               <div className="flex flex-col h-[80px] mt-6">
                 INSPECTOR
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
             {/*Second Row*/}
             <div className="w-1/2">
               <div className="flex flex-col h-[80px]">
                 DESIGN SPECIFICATION
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
               <div className="flex flex-col h-[184px] mt-6">
                 WORKER
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <textarea className="border border-gray-900 pt-1 px-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
           </div>
@@ -127,22 +128,22 @@ export default function Home() {
             <div className="w-1/2 mr-48">
               <div className="flex flex-col h-[184px]">
                 SYSTEM
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <textarea className="border border-gray-900 pt-1 px-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
               <div className="flex flex-col h-[80px] mt-6">
                 DATE
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none"></input>
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2"></input>
               </div>
             </div>
             {/*Second Row*/}
             <div className="w-1/2">
               <div className="flex flex-col h-[184px]">
                 PROBLEM
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <textarea className="border border-gray-900 pt-1 px-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
               <div className="flex flex-col h-[80px] mt-6">
                 CODE
-                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none" />
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
           </div>

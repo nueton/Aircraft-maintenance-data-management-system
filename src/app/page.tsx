@@ -118,7 +118,7 @@ export default function Home() {
       </div>
 
       {/*top bar*/}
-      <div className="absolute right-0 left-[350px] top-0 h-[80px] min-w-[700px] font-mono font-medium content-center">
+      <div className="absolute right-0 left-[350px] top-0 h-[80px] min-w-[1600px] font-mono font-medium content-center">
         <div className="absolute right-20 flex flex-row">
           <div className="text-gray-700">WELCOME,</div>
           <div className="text-blue-600 cursor-pointer">
@@ -128,7 +128,7 @@ export default function Home() {
       </div>
 
       {/*middle*/}
-      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12">
+      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12 overflow-auto">
         <div className="text-5xl font-semibold pb-14">TASKS</div>
         {/*serch group*/}
         <div className="flex flex-row relative w-full min-w-[1430px] pt-1">
@@ -575,7 +575,7 @@ export default function Home() {
           </tbody>
         </table>
         {/*Pagination*/}
-        <div className="mt-10 flex justify-end items-center list-none h-10 text-lg min-w-[1500px]">
+        <div className="mt-10 flex justify-end items-center list-none h-10 text-lg min-w-[1450px]">
           <li>
             <a className="flex items-center mr-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
               <svg
