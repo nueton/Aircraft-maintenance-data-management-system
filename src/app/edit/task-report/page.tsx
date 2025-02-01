@@ -87,7 +87,7 @@ export default function Home() {
       {/*middle*/}
       <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12 overflow-auto">
         <div className="flex flex-row pb-14 items-end">
-          <div className="text-5xl font-semibold mr-4">VIEW REPAIR REPORT</div>
+          <div className="text-5xl font-semibold mr-4">VIEW TASK</div>
           <div className="inline-flex items-center h-9 px-3 self-center text-base font-medium text-center text-gray-900 border-[1.5px] border-gray-900 rounded-s-xl">
             Status
           </div>
@@ -115,7 +115,7 @@ export default function Home() {
             >
               <MenuItem>
                 <a className="block data-[focus]:bg-gray-100 py-2">
-                  Approved Repair
+                  Approved Task
                 </a>
               </MenuItem>
               <MenuItem>
@@ -127,12 +127,24 @@ export default function Home() {
 
         {/*Detail*/}
         <div className="flex flex-col relative w-full pt-3">
-          <span className="text-2xl">DECOMMISSONED EQUIPMENT</span>
+          <span className="text-2xl">DETAIL</span>
           <div className="flex flex-row relative w-full pt-10 text-xl">
             {/*First Row*/}
             <div className="w-1/2 mr-48">
               <div className="flex flex-col h-[80px]">
-                SERIAL NUMBER
+                ORIGIANL AFFILIATION
+                <span className="wfull mt-4 pl-2 flex-1">
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                </span>
+              </div>
+              <div className="flex flex-col h-[80px] mt-6">
+                JCH
+                <span className="wfull mt-4 pl-2 flex-1">
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                </span>
+              </div>
+              <div className="flex flex-col h-[80px] mt-6">
+                INSPECTOR
                 <span className="wfull mt-4 pl-2 flex-1">
                   xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
                 </span>
@@ -141,8 +153,15 @@ export default function Home() {
             {/*Second Row*/}
             <div className="w-1/2">
               <div className="flex flex-col h-[80px]">
-                PARCEL NUMBER
+                DESIGN SPECIFICATION
                 <span className="wfull mt-4 pl-2 flex-1">
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                </span>
+              </div>
+              <div className="flex flex-col h-[184px] mt-6">
+                WORKER
+                <span className="wfull mt-4 pl-2 flex-1">
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx <br />
                   xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
                 </span>
               </div>
@@ -152,21 +171,35 @@ export default function Home() {
 
         {/*Additional*/}
         <div className="flex flex-col relative w-full pt-3 mt-14">
-          <span className="text-2xl">COMMISSIONED EQUIPMENT</span>
+          <span className="text-2xl">ADDITIONAL</span>
           <div className="flex flex-row relative w-full pt-10 text-xl">
             {/*First Row*/}
             <div className="w-1/2 mr-48">
-              <div className="flex flex-col h-[80px]">
-                SERIAL NUMBER
+              <div className="flex flex-col h-[184px]">
+                SYSTEM
                 <span className="wfull mt-4 pl-2 flex-1">
                   xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                  <br />
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
                 </span>
+              </div>
+              <div className="flex flex-col h-[80px] mt-6">
+                DATE
+                <span className="wfull mt-4 pl-2 flex-1">xx/xx/xxxx</span>
               </div>
             </div>
             {/*Second Row*/}
             <div className="w-1/2">
-              <div className="flex flex-col h-[80px]">
-                PARCEL NUMBER
+              <div className="flex flex-col h-[184px]">
+                PROBLEM
+                <span className="wfull mt-4 pl-2 flex-1">
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                  <br />
+                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
+                </span>
+              </div>
+              <div className="flex flex-col h-[80px] mt-6">
+                CODE
                 <span className="wfull mt-4 pl-2 flex-1">
                   xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
                 </span>
@@ -177,7 +210,7 @@ export default function Home() {
 
         {/*button*/}
         <div className="flex mt-16 justify-end text-lg">
-          <button className="flex flex-row justify-center w-36 py-2 pl-1 pr-3 mr-10 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
+          <button className="flex flex-row justify-center w-36 py-2 pl-1 pr-3 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
             <svg
               width="19"
               height="19"
@@ -194,24 +227,6 @@ export default function Home() {
               />
             </svg>
             <div className="ml-2">Return</div>
-          </button>
-          <button className="flex flex-row justify-center w-40 py-2 pl-3 pr-1 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
-            <div className="mr-1">View Task</div>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              className="self-center ml-2"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5.25 17.375L12.75 9.875L5.25 2.375"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
           </button>
           <button className="flex flex-row justify-center w-46 py-2 pl-3 pr-2 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 ml-10 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
             <div className="mr-1">Submitted Status</div>
