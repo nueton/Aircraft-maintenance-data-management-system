@@ -87,50 +87,27 @@ export default function Home() {
       <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12 overflow-auto">
         <div className="flex flex-row pb-14 items-end">
           <div className="text-5xl font-semibold mr-4">VIEW TASK</div>
-          <span className="bg-green-100 px-3 py-1 rounded-lg h-fit text-green-800 font-bold">
-            Approved Repair
+          <span className="bg-[#B58392] px-3 py-1 rounded-lg h-fit text-[#FFECF0] font-bold">
+            Waited for summit Repair
           </span>
         </div>
-
+        <div></div>
         {/*Detail*/}
         <div className="flex flex-col relative w-full pt-3">
-          <span className="text-2xl">DETAIL</span>
+          <span className="text-2xl">DECOMMISSIONED EQUIPMENT</span>
           <div className="flex flex-row relative w-full pt-10 text-xl">
             {/*First Row*/}
             <div className="w-1/2 mr-48">
               <div className="flex flex-col h-[80px]">
-                ORIGIANL AFFILIATION
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                JCH
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                INSPECTOR
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
+                SERIAL NUMBER
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
             {/*Second Row*/}
             <div className="w-1/2">
               <div className="flex flex-col h-[80px]">
-                DESIGN SPECIFICATION
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[184px] mt-6">
-                WORKER
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
+                PARCEL NUMBER
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
           </div>
@@ -138,38 +115,19 @@ export default function Home() {
 
         {/*Additional*/}
         <div className="flex flex-col relative w-full pt-3 mt-14">
-          <span className="text-2xl">ADDITIONAL</span>
+          <span className="text-2xl">COMMISSIONED EQUIPMENT</span>
           <div className="flex flex-row relative w-full pt-10 text-xl">
-            {/*First Row*/}
             <div className="w-1/2 mr-48">
-              <div className="flex flex-col h-[184px]">
-                SYSTEM
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                  <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                DATE
-                <span className="wfull mt-4 pl-2 flex-1">xx/xx/xxxx</span>
+              <div className="flex flex-col h-[80px]">
+                SERIAL NUMBER
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
             {/*Second Row*/}
             <div className="w-1/2">
-              <div className="flex flex-col h-[184px]">
-                PROBLEM
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                  <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                CODE
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
+              <div className="flex flex-col h-[80px]">
+                PARCEL NUMBER
+                <input className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2" />
               </div>
             </div>
           </div>
@@ -177,42 +135,11 @@ export default function Home() {
 
         {/*button*/}
         <div className="flex mt-16 justify-end text-lg">
-          <button className="flex flex-row justify-center w-36 py-2 pl-1 pr-3 mr-10 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 19 19"
-              className="self-center"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M13.0626 2.77087L6.72925 9.50004L13.0626 16.2292"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-
-            <div className="ml-2">Return</div>
+          <button className="flex flex-row justify-center w-36 py-2 pl-3 pr-1 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
+            <div className="mr-1">Cancle</div>
           </button>
-          <button className="flex flex-row justify-center w-52 py-2 pl-3 pr-1 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
-            <div className="mr-1">Repair Report</div>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              className="self-center ml-2"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5.25 17.375L12.75 9.875L5.25 2.375"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <button className="flex flex-row justify-center w-36 py-2 pl-3 pr-1 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 ml-10 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
+            <div className="mr-1">Submit</div>
           </button>
         </div>
       </div>
