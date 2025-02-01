@@ -90,6 +90,7 @@ export default function Home() {
           <span className="bg-green-100 px-3 py-1 rounded-lg h-fit text-green-800 font-bold">
             Approved Repair
           </span>
+          <div></div>
         </div>
 
         {/*Detail*/}
