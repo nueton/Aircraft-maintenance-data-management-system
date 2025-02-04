@@ -11,7 +11,19 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "qq-primary": "#B58392",
+        // "qq-primary": {
+        //   100: "#B58392",
+        //   200: "#B58399",
+        // },
       },
+    },
+    screens: {
+      "2xl": { max: "1535px" },
+      xl: { max: "1279px" },
+      lg: { max: "1023px" },
+      md: { max: "767px" },
+      sm: { max: "639px" },
     },
   },
   plugins: [],

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import HomeIcon from "@/assets/icons/HomeIcon";
+import AddIcon from "@/assets/icons/AddIcon";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +29,27 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="pt-32 absolute w-80 transition-all bg-slate-50 left-0 top-0 bottom-0">
+          <button className="flex w-full h-10 py-5 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
+            <HomeIcon />
+            <div className="self-center ml-5">TASKS</div>
+            <AddIcon />
+          </button>
+          {/* <button className="mt-3 flex w-full h-10 py-5 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
+            <HomeIcon />
+            <div className="self-center ml-5">TASKS</div>
+            <AddIcon />
+          </button> */}
+        </div>
+        <div className="absolute inset-0 left-80 transition-all">
+          <div className="flex justify-end items-center w-full bg-slate-300 pr-10 h-20">
+            <span className="text-gray-700">Welcome,</span>
+            <span className="text-blue-600 cursor-pointer">
+              Nichapat Thitithanakorn
+            </span>
+          </div>
+          <div className="p-10">{children}</div>
+        </div>
       </body>
     </html>
   );
