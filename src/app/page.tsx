@@ -8,10 +8,10 @@ import FileIcon from "@/assets/icons/FileIcon";
 import UpdownIcon from "@/assets/icons/UpdownIcon";
 import RemindTags from "@/components/RemindTags";
 import DropdownIcon from "@/assets/icons/DropdownIcon";
-import CreateButton from "@/components/button/CreateButton";
 import LeftIcon from "@/assets/icons/LeftIcon";
 import RightIcon from "@/assets/icons/RightIcon";
 import { cn } from "@/helpers/cn";
+import ActionButton from "@/components/button/ActionButton";
 
 type CategoryType = {
   id: number;
@@ -173,10 +173,8 @@ export default function Home() {
         <button className="flex justify-center place-items-center border-[0.1rem] px-4 border-gray-900 rounded-e-xl stroke-gray-900 stroke-2 hover:bg-slate-500 hover:border-slate-500 hover:stroke-white ease-in duration-75">
           <SearchIcon />
         </button>
-        <CreateButton>
-          <span className="mr-1">Create</span>
-          <AddCreateIcon />
-        </CreateButton>
+
+        <ActionButton label="Create" iconRight={<AddCreateIcon />} />
       </div>
 
       {/*Table*/}

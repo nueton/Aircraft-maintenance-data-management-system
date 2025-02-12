@@ -6,7 +6,7 @@ type AppFormPanelProps = {
 
 function AppFormPanel({ children }: AppFormPanelProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-1 gap-6 w-full pt-10 text-xl">
+    <div className="grid grid-cols-2 lg:grid-cols-1 gap-10 w-full pt-10 text-xl">
       {children}
     </div>
   );

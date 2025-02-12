@@ -1,20 +1,20 @@
-import HomeIcon from "@/assets/icons/HomeIcon";
-import AppButton from "@/components/AppButton";
-import AppFormPanel from "@/components/AppFormPanel";
-import AppTetxtInput from "@/components/AppTetxtInput";
+import AddCreateIcon from "@/assets/icons/AddCreateIcon";
+import AppFormPanel from "@/components/InputArea/AppFormPanel";
+import AppTetxtInput from "@/components/InputArea/AppTetxtInput";
+import ActionButton from "@/components/button/ActionButton";
+import RemindTags from "@/components/RemindTags";
 
 export default function Home() {
   return (
     <>
       {/* Title page */}
-      <div className="flex flex-row items-center pb-14">
-        <div className="text-5xl font-semibold mr-4">CREATE REPAIR REPORT</div>
-        <span className="bg-qq-primary px-3 py-1 rounded-lg h-fit text-white font-bold">
-          Waited for summit Repair
+      <div className="flex items-center pb-14">
+        <span className="text-5xl font-semibold mr-4">
+          CREATE REPAIR REPORT
         </span>
+        <RemindTags status={3} />
       </div>
 
-      {/*Detail*/}
       <div className="w-full">
         <span className="text-2xl">DECOMMISSIONED EQUIPMENT</span>
         <AppFormPanel>
@@ -23,7 +23,6 @@ export default function Home() {
         </AppFormPanel>
       </div>
 
-      {/*Additional*/}
       <div className="w-full mt-14">
         <span className="text-2xl">COMMISSIONED EQUIPMENT</span>
         <AppFormPanel>
@@ -33,9 +32,9 @@ export default function Home() {
       </div>
 
       {/*button*/}
-      <div className="mt-16 flex justify-end gap-5">
-        <AppButton title="cancel" />
-        <AppButton title="create" rightIcon={<HomeIcon />} />
+      <div className="mt-16 flex justify-end">
+        <ActionButton label="Cancel" />
+        <ActionButton label="Create" iconRight={<AddCreateIcon />} />
       </div>
     </>
   );

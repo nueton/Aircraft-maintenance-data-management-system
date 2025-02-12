@@ -8,33 +8,39 @@ type RemindTagsProps = {
 const ColorTags = [
   {
     id: 1,
-    text: "Approved Task",
-    textColor: "text-green-600",
-    bgColor: "bg-green-100",
-  },
-  {
-    id: 2,
-    text: "Approved Repair Task",
-    textColor: "text-sky-600",
-    bgColor: "bg-sky-100",
-  },
-  {
-    id: 3,
-    text: "Rejected",
-    textColor: "text-red-600",
-    bgColor: "bg-red-100",
-  },
-  {
-    id: 4,
     text: "Pending Approved Task",
     textColor: "text-stone-600",
     bgColor: "bg-stone-100",
   },
   {
-    id: 5,
+    id: 2,
+    text: "Approved Task",
+    textColor: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+  {
+    id: 3,
+    text: "Waiting for submit repair",
+    textColor: "text-pink-600",
+    bgColor: "bg-pink-100",
+  },
+  {
+    id: 4,
     text: "Pending Approve Repair",
     textColor: "text-purple-600",
     bgColor: "bg-purple-100",
+  },
+  {
+    id: 5,
+    text: "Approved Repair Task",
+    textColor: "text-sky-600",
+    bgColor: "bg-sky-100",
+  },
+  {
+    id: 6,
+    text: "Rejected",
+    textColor: "text-red-600",
+    bgColor: "bg-red-100",
   },
 ];
 
