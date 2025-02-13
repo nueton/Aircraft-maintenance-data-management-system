@@ -8,7 +8,7 @@ function AppTetxtInput({ label }: AppInputProps) {
   const id = useId();
 
   return (
-    <div className="flex flex-col h-20">
+    <div className="flex flex-col h-20 text-lg">
       <label htmlFor={id} className="uppercase">
         {label}
       </label>

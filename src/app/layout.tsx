@@ -54,7 +54,7 @@ export default function RootLayout({
               <span className="flex-1 text-left pl-5">Not Checked</span>
             </SideButton>
           </div>
-          <div className="h-20">
+          <div className="h-24">
             <SideButton>
               <StopIcon style="w-10" />
               <span className="flex-1 text-left pl-5">Log out</span>
@@ -62,7 +62,7 @@ export default function RootLayout({
           </div>
         </div>
         <div className="absolute inset-0 left-80 transition-all">
-          <div className="flex justify-end items-end w-full pr-10 h-16">
+          <div className="flex justify-end items-end w-full pr-10 h-16 text-lg">
             <span className="text-gray-700">Welcome,</span>
             <span className="text-blue-600 cursor-pointer">
               Nichapat Thitithanakorn

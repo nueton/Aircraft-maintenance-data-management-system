@@ -12,6 +12,7 @@ import LeftIcon from "@/assets/icons/LeftIcon";
 import RightIcon from "@/assets/icons/RightIcon";
 import { cn } from "@/helpers/cn";
 import ActionButton from "@/components/button/ActionButton";
+import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 
 type CategoryType = {
   id: number;
@@ -131,19 +132,17 @@ export default function Home() {
 
   return (
     <div>
-      <div className="text-5xl font-semibold pb-14">TASKS</div>
+      <HeaderDisplay label="TASKS" />
       {/*serch group*/}
       <div className="flex w-full min-w-[90rem] pt-1">
         <Menu>
-          <MenuButton className="inline-flex items-center py-2 pl-5 pr-3 text-base font-medium text-center text-gray-900 hover:text-white hover:bg-slate-500 border-[0.1rem] hover:border-slate-500 border-gray-900 rounded-s-xl stroke-gray-900 hover:stroke-white ease-in duration-75">
-            <p className="mr-2 text-nowrap w-32 truncate">
-              {selectCategoryName}
-            </p>
-            <DropdownIcon />
+          <MenuButton className="inline-flex items-center py-2 pl-5 pr-3 text-lg font-medium text-center text-gray-900 hover:text-white hover:bg-slate-500 border-[0.1rem] hover:border-slate-500 border-gray-900 rounded-s-xl stroke-gray-900 hover:stroke-white ease-in duration-75">
+            <p className=" text-nowrap w-40 truncate">{selectCategoryName}</p>
+            <DropdownIcon style="ml-1" />
           </MenuButton>
           <MenuItems
             anchor="bottom"
-            className="w-56 mt-2 border rounded-lg text-center font-mono bg-white"
+            className="w-56 mt-2 border rounded-lg text-lg text-center bg-white"
           >
             {categories.map((c) => {
               return (
@@ -165,7 +164,7 @@ export default function Home() {
         </Menu>
 
         <input
-          className="border-y-[0.1rem] border-gray-900 py-2 pl-2 w-full focus:outline-none"
+          className="border-y-[0.1rem] text-lg border-gray-900 py-2 pl-4 w-full focus:outline-none"
           type="search"
           placeholder="Search Original Affiliation, JCH, inspector, Model"
         />
@@ -192,7 +191,7 @@ export default function Home() {
                 <th
                   key={c.id}
                   className={cn(
-                    "min-w-64 border-t-[0.1rem] border-gray-900",
+                    "min-w-64 border-t-[0.1rem] border-gray-900 text-lg font-semibold",
                     styleHeader
                   )}
                 >
@@ -216,10 +215,13 @@ export default function Home() {
                   ]
                 : ["", "", ""];
             return (
-              <tr key={c.id} className="text-center h-16 hover:bg-slate-100">
+              <tr
+                key={c.id}
+                className="text-center h-16 hover:bg-slate-100 text-base"
+              >
                 <td
                   className={cn(
-                    "pl-8 text-left border-l-[0.1rem] border-gray-900",
+                    "pl-8 text-left border-l-[0.1rem] border-gray-900 ",
                     styleData[0]
                   )}
                 >
@@ -248,7 +250,7 @@ export default function Home() {
       <div className="mt-10 flex justify-end items-center list-none h-10 text-lg min-w-[90rem]">
         <li>
           <a className="flex items-center mr-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
-            <LeftIcon />
+            <LeftIcon style="black" />
           </a>
         </li>
         {PaginationNumber.map((c) => {
@@ -263,7 +265,7 @@ export default function Home() {
         })}
         <li>
           <a className="flex items-center mr-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
-            <RightIcon />
+            <RightIcon style="black" />
           </a>
         </li>
       </div>

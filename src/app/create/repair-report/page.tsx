@@ -1,31 +1,27 @@
 import AddCreateIcon from "@/assets/icons/AddCreateIcon";
-import AppFormPanel from "@/components/InputArea/AppFormPanel";
+import AppFormPanel from "@/components/AppFormPanel";
 import AppTetxtInput from "@/components/InputArea/AppTetxtInput";
 import ActionButton from "@/components/button/ActionButton";
 import RemindTags from "@/components/RemindTags";
+import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 
 export default function Home() {
   return (
     <>
       {/* Title page */}
-      <div className="flex items-center pb-14">
-        <span className="text-5xl font-semibold mr-4">
-          CREATE REPAIR REPORT
-        </span>
+      <HeaderDisplay label="CREATE REPAIR REPORT">
         <RemindTags status={3} />
-      </div>
+      </HeaderDisplay>
 
       <div className="w-full">
-        <span className="text-2xl">DECOMMISSIONED EQUIPMENT</span>
-        <AppFormPanel>
+        <AppFormPanel label="DECOMMISSIONED EQUIPMENT">
           <AppTetxtInput label="SERIAL NUMBER" />
           <AppTetxtInput label="PARCEL NUMBER" />
         </AppFormPanel>
       </div>
 
       <div className="w-full mt-14">
-        <span className="text-2xl">COMMISSIONED EQUIPMENT</span>
-        <AppFormPanel>
+        <AppFormPanel label="COMMISSIONED EQUIPMENT">
           <AppTetxtInput label="SERIAL NUMBER" />
           <AppTetxtInput label="PARCEL NUMBER" />
         </AppFormPanel>

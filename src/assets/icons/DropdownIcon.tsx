@@ -1,6 +1,11 @@
 import React from "react";
+import { cn } from "@/helpers/cn";
 
-function AddIcon() {
+type DropdownIconProps = {
+  style?: string;
+};
+
+function DropdownIcon({ style = "" }: DropdownIconProps) {
   return (
     <svg
       width="20"
@@ -8,7 +13,7 @@ function AddIcon() {
       viewBox="0 0 20 20"
       fill="none"
       aria-hidden="true"
-      className="self-center"
+      className={cn("self-center ", style)}
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
@@ -21,4 +26,4 @@ function AddIcon() {
   );
 }
 
-export default AddIcon;
+export default DropdownIcon;

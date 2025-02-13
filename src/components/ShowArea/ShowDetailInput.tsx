@@ -1,10 +1,11 @@
 import React, { useId } from "react";
 
-type AppDetailInputProps = {
+type ShowDetailInputProps = {
   label: string;
+  content: string;
 };
 
-function AppDetailInput({ label }: AppDetailInputProps) {
+function ShowDetailInput({ label, content }: ShowDetailInputProps) {
   const id = useId();
 
   return (
@@ -13,13 +14,12 @@ function AppDetailInput({ label }: AppDetailInputProps) {
         <label htmlFor={id} className="uppercase">
           {label}
         </label>
-        <textarea
-          id={id}
-          className="border border-gray-900 pt-1 px-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2"
-        />
+        <span id={id} className="w-full flex-1 mt-4">
+          {content}
+        </span>
       </div>
     </div>
   );
 }
 
-export default AppDetailInput;
+export default ShowDetailInput;

@@ -1,225 +1,131 @@
+"use client";
+
+import LeftIcon from "@/assets/icons/LeftIcon";
+import DropdownIcon from "@/assets/icons/DropdownIcon";
+import AppFormPanel from "@/components/AppFormPanel";
+import ActionButton from "@/components/button/ActionButton";
+import ShowDetailInput from "@/components/ShowArea/ShowDetailInput";
+import ShowTextInput from "@/components/ShowArea/ShowTetxtInput";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useEffect, useState } from "react";
+import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
+
+type StatusType = {
+  id: number;
+  name: string;
+};
+
 export default function Home() {
+  const [status, setstatus] = useState<StatusType[]>([]);
+  const [selectStatusId, setselectStatusId] = useState(0);
+  const selectStatusName =
+    selectStatusId !== 0
+      ? status.find((c) => c.id === selectStatusId)?.name
+      : "Select Status";
+
+  useEffect(() => {
+    getAllstatus();
+  }, []);
+
+  async function getAllstatus() {
+    const status = [
+      {
+        id: 1,
+        name: "Approved Task",
+      },
+      {
+        id: 2,
+        name: "Rejected",
+      },
+    ];
+    // get status from api
+    setstatus(status);
+  }
+
   return (
-    <div>
-      {/*left side bar*/}
-      <div className="relative w-[350px] border-r border-gray-900 text-xl h-screen min-h-[500px] font-mono font-semibold pt-60 pl-10">
-        {/*third button*/}
-        <button className="flex w-full h-10 py-5 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            className="self-center w-10"
-            xmlns="http://www.w3.org/2000/svg"
+    <div className="flex flex-col h-[85vh]">
+      {/* Title page */}
+      <HeaderDisplay label="VIEW TASK">
+        <span className="inline-flex items-center h-10 px-5 self-center text-lg font-medium text-center text-gray-900 border-[1.5px] border-gray-900 rounded-s-xl">
+          Status
+        </span>
+        <Menu>
+          <MenuButton className="flex items-center h-10 w-48 self-center pl-5 pr-3 text-lg font-medium text-center text-gray-900 border-gray-900 border-y-[1.5px] border-r-[1.5px] rounded-r-xl stroke-gray-900">
+            <span className="flex-1 mr-1">{selectStatusName}</span>
+            <DropdownIcon />
+          </MenuButton>
+          <MenuItems
+            anchor="bottom"
+            className="w-48 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white"
           >
-            <path
-              d="M2.66669 12.2667L7.61907 17.3334L20 4.66675"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            {status.map((c) => {
+              return (
+                <div
+                  key={c.id}
+                  onClick={() => {
+                    setselectStatusId(c.id);
+                  }}
+                >
+                  <MenuItem>
+                    <a className="block data-[focus]:bg-gray-100 py-2">
+                      {c.name}
+                    </a>
+                  </MenuItem>
+                </div>
+              );
+            })}
+          </MenuItems>
+        </Menu>
+      </HeaderDisplay>
+      {/* content */}
+      <div className="overflow-auto">
+        <div className="w-full">
+          <AppFormPanel label="DETAIL">
+            <ShowTextInput
+              label="ORIGIANL AFFILIATION"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
             />
-          </svg>
-
-          <div className="self-center ml-5">CHECKED</div>
-        </button>
-
-        {/*fourth button*/}
-        <button className="flex w-full h-10 py-5 mt-8 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            className="self-center w-10"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18.7647 2.58813L2.58826 18.7646M2.58826 2.58813L18.7647 18.7646"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <ShowTextInput
+              label="DESIGN SPECIFICATION"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
             />
-          </svg>
+            <ShowTextInput
+              label="JCH"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+            <ShowDetailInput
+              label="WORKER"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+            <ShowTextInput
+              label="INSPECTOR"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+          </AppFormPanel>
+        </div>
 
-          <div className="self-center ml-5">NOT CHECKED</div>
-        </button>
-
-        {/*bottom button*/}
-        <button className="flex absolute bottom-5 w-full h-10 py-5 mt-8 cursor-pointer text-gray-900 hover:text-slate-500 stroke-gray-900 hover:stroke-slate-500 stroke-2 ease-in duration-200">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            className="self-center w-10"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M5 10H15M18.125 10C18.125 12.1549 17.269 14.2215 15.7452 15.7452C14.2215 17.269 12.1549 18.125 10 18.125C7.84512 18.125 5.77849 17.269 4.25476 15.7452C2.73102 14.2215 1.875 12.1549 1.875 10C1.875 7.84512 2.73102 5.77849 4.25476 4.25476C5.77849 2.73102 7.84512 1.875 10 1.875C12.1549 1.875 14.2215 2.73102 15.7452 4.25476C17.269 5.77849 18.125 7.84512 18.125 10Z" />
-          </svg>
-          <div className="self-center ml-5">LOG OUT</div>
-        </button>
-      </div>
-
-      {/*top bar*/}
-      <div className="absolute right-0 left-[350px] top-0 h-[80px] min-w-[700px] font-mono font-medium content-center">
-        <div className="absolute right-20 flex flex-row">
-          <div className="text-gray-700">WELCOME,</div>
-          <div className="text-blue-600 cursor-pointer">
-            Nichapat Thitithanakorn
-          </div>
+        <div className="w-full mt-14">
+          <AppFormPanel label="ADDITIONAL">
+            <ShowDetailInput
+              label="SYSTEM"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+            <ShowDetailInput
+              label="PROBLEM"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+            <ShowTextInput label="DATE" content={"xx/xx/xxxx"} />
+            <ShowTextInput
+              label="CODE"
+              content={"xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxx"}
+            />
+          </AppFormPanel>
         </div>
       </div>
-
-      {/*middle*/}
-      <div className="absolute left-[350px] right-0 top-[80px] bottom-0 font-mono px-20 py-12 overflow-auto">
-        <div className="flex flex-row pb-14 items-end">
-          <div className="text-5xl font-semibold mr-4">VIEW TASK</div>
-          <div className="inline-flex items-center h-9 px-3 self-center text-base font-medium text-center text-gray-900 border-[1.5px] border-gray-900 rounded-s-xl">
-            Status
-          </div>
-          <Menu>
-            <MenuButton className="flex justify-end h-9 w-52 self-center py-2 pl-5 pr-3 text-base font-medium text-center text-gray-900 border-gray-900 border-y-[1.5px] border-r-[1.5px] rounded-r-xl stroke-gray-900">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M15 7.5L10 12.5L5 7.5"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </MenuButton>
-            <MenuItems
-              anchor="bottom"
-              className="w-52 mt-3 border border-gray-300 rounded-lg text-center font-mono bg-white"
-            >
-              <MenuItem>
-                <a className="block data-[focus]:bg-gray-100 py-2">
-                  Approved Task
-                </a>
-              </MenuItem>
-              <MenuItem>
-                <a className="block data-[focus]:bg-gray-100 py-2">Rejected</a>
-              </MenuItem>
-            </MenuItems>
-          </Menu>
-        </div>
-
-        {/*Detail*/}
-        <div className="flex flex-col relative w-full pt-3">
-          <span className="text-2xl">DETAIL</span>
-          <div className="flex flex-row relative w-full pt-10 text-xl">
-            {/*First Row*/}
-            <div className="w-1/2 mr-48">
-              <div className="flex flex-col h-[80px]">
-                ORIGIANL AFFILIATION
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                JCH
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                INSPECTOR
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-            </div>
-            {/*Second Row*/}
-            <div className="w-1/2">
-              <div className="flex flex-col h-[80px]">
-                DESIGN SPECIFICATION
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[184px] mt-6">
-                WORKER
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/*Additional*/}
-        <div className="flex flex-col relative w-full pt-3 mt-14">
-          <span className="text-2xl">ADDITIONAL</span>
-          <div className="flex flex-row relative w-full pt-10 text-xl">
-            {/*First Row*/}
-            <div className="w-1/2 mr-48">
-              <div className="flex flex-col h-[184px]">
-                SYSTEM
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                  <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                DATE
-                <span className="wfull mt-4 pl-2 flex-1">xx/xx/xxxx</span>
-              </div>
-            </div>
-            {/*Second Row*/}
-            <div className="w-1/2">
-              <div className="flex flex-col h-[184px]">
-                PROBLEM
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                  <br />
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-              <div className="flex flex-col h-[80px] mt-6">
-                CODE
-                <span className="wfull mt-4 pl-2 flex-1">
-                  xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/*button*/}
-        <div className="flex mt-16 justify-end text-lg">
-          <button className="flex flex-row justify-center w-36 py-2 pl-1 pr-3 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 19 19"
-              className="self-center"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M13.0626 2.77087L6.72925 9.50004L13.0626 16.2292"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <div className="ml-2">Return</div>
-          </button>
-          <button className="flex flex-row justify-center w-46 py-2 pl-3 pr-2 border-[1.5px] rounded-xl border-gray-900 stroke-gray-900 ml-10 hover:bg-slate-500 hover:border-slate-500 hover:text-white hover:stroke-white ease-in duration-75">
-            <div className="mr-1">Submitted Status</div>
-          </button>
-        </div>
+      {/*button*/}
+      <div className="mt-16 flex justify-end">
+        <ActionButton label="Return" iconLeft={<LeftIcon />} />
+        <ActionButton label="Submitted Status" />
       </div>
     </div>
   );
