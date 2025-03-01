@@ -15,6 +15,13 @@ type StatusType = {
   name: string;
 };
 
+type RepairReportType = {
+  id: number;
+  serialNumber: string;
+  parcelNumber: string;
+  //...
+};
+
 export default function Home() {
   const [status, setstatus] = useState<StatusType[]>([]);
   const [selectStatusId, setselectStatusId] = useState(0);
@@ -23,9 +30,24 @@ export default function Home() {
       ? status.find((c) => c.id === selectStatusId)?.name
       : "Select Status";
 
+  const [repairReport, setRepairReport] = useState<RepairReportType>({
+    id: 0,
+    serialNumber: "",
+    parcelNumber: "",
+  });
+
   useEffect(() => {
     getAllstatus();
+    getRepairReport(11);
   }, []);
+
+  async function getRepairReport(id: number) {
+    setRepairReport({
+      id: id,
+      parcelNumber: "sss",
+      serialNumber: "ll",
+    });
+  }
 
   async function getAllstatus() {
     const status = [

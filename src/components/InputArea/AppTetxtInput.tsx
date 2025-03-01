@@ -2,9 +2,11 @@ import React, { useId } from "react";
 
 type AppInputProps = {
   label: string;
+  value: string;
+  onTextChange?: (text: string) => void;
 };
 
-function AppTetxtInput({ label }: AppInputProps) {
+function AppTetxtInput({ label, value, onTextChange }: AppInputProps) {
   const id = useId();
 
   return (
@@ -13,6 +15,10 @@ function AppTetxtInput({ label }: AppInputProps) {
         {label}
       </label>
       <input
+        value={value}
+        onChange={(e) => {
+          onTextChange?.(e.target.value);
+        }}
         id={id}
         className="border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2"
       />

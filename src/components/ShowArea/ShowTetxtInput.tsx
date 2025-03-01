@@ -3,9 +3,10 @@ import React, { useId } from "react";
 type ShowTextInputProps = {
   label: string;
   content: string;
+  // names: string[];
 };
 
-function ShowTextInput({ label, content }: ShowTextInputProps) {
+function ShowTextInput({ label, content, names }: ShowTextInputProps) {
   const id = useId();
 
   return (
@@ -16,6 +17,9 @@ function ShowTextInput({ label, content }: ShowTextInputProps) {
       <span id={id} className="w-full flex-1 mt-4">
         {content}
       </span>
+      {/* {names.map((n) => {
+        return <div key={n}>{n}</div>;
+      })} */}
     </div>
   );
 }

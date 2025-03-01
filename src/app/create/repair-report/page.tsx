@@ -1,11 +1,31 @@
+"use client";
+
 import AddCreateIcon from "@/assets/icons/AddCreateIcon";
 import AppFormPanel from "@/components/AppFormPanel";
 import AppTetxtInput from "@/components/InputArea/AppTetxtInput";
 import ActionButton from "@/components/button/ActionButton";
 import RemindTags from "@/components/RemindTags";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
+import { useEffect, useState } from "react";
 
-export default function Home() {
+type RepairReportType = {
+  serialNumber: string;
+  parcelNumber: string;
+  //...
+};
+
+export default function RepairReportPage() {
+  //
+
+  const [repairReport, setRepairReport] = useState<RepairReportType>({
+    serialNumber: "",
+    parcelNumber: "",
+  });
+
+  async function create() {
+    console.log("repairReport", repairReport);
+  }
+
   return (
     <>
       {/* Title page */}
@@ -15,8 +35,20 @@ export default function Home() {
 
       <div className="w-full">
         <AppFormPanel label="DECOMMISSIONED EQUIPMENT">
-          <AppTetxtInput label="SERIAL NUMBER" />
-          <AppTetxtInput label="PARCEL NUMBER" />
+          <AppTetxtInput
+            value={repairReport.serialNumber}
+            onTextChange={(serialNumber) =>
+              setRepairReport((pre) => ({ ...pre, serialNumber }))
+            }
+            label="SERIAL NUMBER"
+          />
+          <AppTetxtInput
+            value={repairReport.parcelNumber}
+            onTextChange={(parcelNumber) =>
+              setRepairReport((pre) => ({ ...pre, parcelNumber }))
+            }
+            label="PARCEL NUMBER"
+          />
         </AppFormPanel>
       </div>
 
@@ -30,7 +62,11 @@ export default function Home() {
       {/*button*/}
       <div className="mt-16 flex justify-end">
         <ActionButton label="Cancel" />
-        <ActionButton label="Create" iconRight={<AddCreateIcon />} />
+        <ActionButton
+          onClick={create}
+          label="Create"
+          iconRight={<AddCreateIcon />}
+        />
       </div>
     </>
   );
