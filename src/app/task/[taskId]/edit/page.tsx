@@ -1,110 +1,155 @@
 "use client";
 
-import LeftIcon from "@/assets/icons/LeftIcon";
-import RightIcon from "@/assets/icons/RightIcon";
 import AppFormPanel from "@/components/AppFormPanel";
 import ActionButton from "@/components/button/ActionButton";
-import RemindTags from "@/components/RemindTags";
 import ShowDetailInput from "@/components/ShowArea/ShowDetailInput";
 import ShowTextInput from "@/components/ShowArea/ShowTetxtInput";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
+import Link from "next/link";
+import DropdownIcon from "@/assets/icons/DropdownIcon";
+import dayjs from "dayjs";
+import moment from "moment";
+
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { delay } from "@/libs/delay";
 import { myapi } from "@/services/myapi";
-import { useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import DropdownIcon from "@/assets/icons/DropdownIcon";
 
 type Task = {
   id: number;
   code: string;
-  dateTime: string;
+  createdTimeTask: Date;
   designSpecification: string;
   inspector: string;
   jch: string;
-  orgianlAffiliation: string;
+  originalAffiliation: string;
   problem: string;
-  status: number;
+  taskStatus: number;
   system: string;
   worker: string;
-};
-
-type StatusType = {
-  id: number;
-  name: string;
+  createdUserId: string;
+  changeStatusUserId: string;
 };
 
 export default function TaskEditPage() {
+  //task id, get task
   const { taskId } = useParams<{ taskId: string }>();
-
   const [task, setTask] = useState<Task>({
     id: 0,
     code: "",
-    dateTime: "",
+    createdTimeTask: new Date(),
     designSpecification: "",
     inspector: "",
     jch: "",
-    orgianlAffiliation: "",
+    originalAffiliation: "",
     problem: "",
-    status: 0,
+    taskStatus: 0,
     system: "",
     worker: "",
+    createdUserId: "",
+    changeStatusUserId: "",
   });
-
   const [getTaskLoading, setGetTaskLoading] = useState(false);
   const [errorLoadTask, setErrorLoadTask] = useState("");
-  const [successSaveTask, setSuccessSaveTask] = useState("");
-  const [statusUpdate, setStatusUpdate] = useState<StatusType[]>([]);
-  const [selectStatusId, setselectStatusId] = useState(0);
-
+  //select status
+  const [selectStatusId, setselectStatusId] = useState({ id: 0 });
+  const statusUpdate = [
+    {
+      id: 2,
+      name: "Approved Task",
+    },
+    {
+      id: 3,
+      name: "Waiting for submit repair",
+    },
+    {
+      id: 6,
+      name: "Rejected",
+    },
+  ];
   const selectStatusName =
-    selectStatusId !== 0
-      ? statusUpdate.find((c) => c.id === selectStatusId)?.name
+    selectStatusId.id !== 0
+      ? statusUpdate.find((c) => c.id === selectStatusId.id)?.name
       : "Select Status";
+  //username that create task
+  const [username, setUsername] = useState("");
+  const [getUsernameLoading, setGetUsernameLoading] = useState(false);
+  const [errorLoadUsername, setErrorLoadUsername] = useState("");
+  //save loading
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [errorSaveLoading, setErrorSaveLoading] = useState("");
+  //check input
+  const [requiredInput, setRequiredInput] = useState("");
 
+  const router = useRouter();
+
+  //get task from api
   useEffect(() => {
     if (taskId) {
       getTask(Number(taskId));
     }
   }, [taskId]);
 
+  //use id from task to find created username from user db
   useEffect(() => {
-    getAllStatus();
-  }, []);
+    if (task.createdUserId) {
+      getUsername(String(task.createdUserId));
+    }
+  }, [task.createdUserId]);
 
   async function saveTask() {
-    if (task.id === 0) {
-      setErrorLoadTask("Invalid Task");
+    //For second attempt
+    setErrorSaveLoading("");
+    setRequiredInput("");
+    //select status or not
+    if (selectStatusId.id === 0) {
+      setRequiredInput("Please select status");
       return;
     }
+    //input changed status user
+    const changeStatusUserId = localStorage.getItem("nameIdentifier");
+    if (changeStatusUserId) task.changeStatusUserId = changeStatusUserId;
+    //start to use api
+    setSaveLoading(true);
+    //check loading
+    await delay();
     try {
-      setGetTaskLoading(true);
-
-      await delay();
-
-      const res = await myapi.put(`/task/${task.id}`, task);
+      //put api
+      const res = await myapi.put(`/task/${task.id}`, task, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       if (res.status !== 200) {
-        setErrorLoadTask("Error saving task");
-        setGetTaskLoading(false);
+        setErrorSaveLoading(
+          "We can't process your request. Please submit again."
+        );
+        setSaveLoading(false);
         return;
       }
-      setGetTaskLoading(false);
-      setSuccessSaveTask("Task saved successfully");
+      setSaveLoading(false);
+      router.push(`/task/${task.id}`);
     } catch (error) {
       console.error(error);
-      setErrorLoadTask("Error saving Task");
-      setGetTaskLoading(false);
+      setErrorSaveLoading(
+        "We can't process your request. Please submit again."
+      );
+      setSaveLoading(false);
     }
   }
 
+  //get detail task
   async function getTask(id: number) {
+    setGetTaskLoading(true);
+    await delay();
     try {
-      setGetTaskLoading(true);
-
-      await delay;
-
-      const res = await myapi.get(`/Task/${id}`);
+      //get deatil with id
+      const res = await myapi.get(`/Task/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       if (res.status !== 200) {
         setErrorLoadTask("Error loading task");
         setGetTaskLoading(false);
@@ -119,56 +164,77 @@ export default function TaskEditPage() {
     }
   }
 
-  async function getAllStatus() {
-    const status = [
-      {
-        id: 2,
-        name: "Approved Task",
-      },
-      {
-        id: 5,
-        name: "Rejected",
-      },
-    ];
-    // get status from api
-    setStatusUpdate(status);
+  //get created username
+  async function getUsername(id: string) {
+    setGetUsernameLoading(true);
+    await delay();
+    try {
+      //get created username from id in task
+      const res = await myapi.get(`/Auth/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorLoadUsername("Error Loading Username");
+        setGetUsernameLoading(false);
+        return;
+      }
+      setUsername(res.data);
+      setGetUsernameLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorLoadUsername("Error Loading Username");
+      setGetUsernameLoading(false);
+    }
+  }
+
+  //check token and expire time
+  if (
+    localStorage.getItem("name") == null ||
+    new Date(moment(Date.now()).toISOString()) >
+      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
+  ) {
+    localStorage.clear();
+    redirect(`/login`);
+  } else if (localStorage.getItem("role") !== "admin") {
+    redirect(`/login`);
   }
 
   return (
     <div className="flex flex-col h-[85vh]">
-      {getTaskLoading ? (
+      {getTaskLoading || getUsernameLoading ? (
         <>
-          <HeaderDisplay label="VIEW TASK REPORT" />
+          <HeaderDisplay label="EDIT TASK REPORT" />
           <span>Loading....</span>
         </>
-      ) : errorLoadTask ? (
+      ) : errorLoadTask || errorLoadUsername ? (
         <>
-          <HeaderDisplay label="VIEW TASK REPORT"></HeaderDisplay>
+          <HeaderDisplay label="EDIT TASK REPORT" />
+          <span>Error Loading task</span>
         </>
       ) : (
         <>
-          {/* <span>{successSaveTask && <div>{successSaveTask}</div>}</span>
-          <span>{task.status}</span> */}
-          <HeaderDisplay label="VIEW TASK REPORT">
+          <HeaderDisplay label="EDIT TASK REPORT">
             <span className="inline-flex items-center h-10 px-5 self-center text-lg font-medium text-center text-gray-900 border-[1.5px] border-gray-900 rounded-s-xl">
               Status
             </span>
             <Menu>
-              <MenuButton className="flex items-center h-10 w-48 self-center pl-5 pr-3 text-lg font-medium text-center text-gray-900 border-gray-900 border-y-[1.5px] border-r-[1.5px] rounded-r-xl stroke-gray-900">
+              <MenuButton className="flex items-center h-10 w-64 self-center pl-5 pr-3 text-lg font-medium text-center text-gray-900 border-gray-900 border-y-[1.5px] border-r-[1.5px] rounded-r-xl stroke-gray-900">
                 <span className="flex-1 mr-1">{selectStatusName}</span>
                 <DropdownIcon />
               </MenuButton>
               <MenuItems
                 anchor="bottom"
-                className="w-48 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white"
+                className="w-64 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white"
               >
                 {statusUpdate.map((c) => {
                   return (
                     <div
                       key={c.id}
                       onClick={() => {
-                        setselectStatusId(c.id);
-                        setTask({ ...task, status: c.id });
+                        setselectStatusId({ ...selectStatusId, id: c.id });
+                        setTask({ ...task, taskStatus: c.id });
                       }}
                     >
                       <MenuItem>
@@ -181,13 +247,27 @@ export default function TaskEditPage() {
                 })}
               </MenuItems>
             </Menu>
+            {errorSaveLoading !== "" ? (
+              <span className="ml-5 font-semibold text-red-500">
+                {errorSaveLoading}
+              </span>
+            ) : (
+              <></>
+            )}
+            {requiredInput !== "" && selectStatusId.id == 0 ? (
+              <span className="ml-5 font-semibold text-red-500">
+                {requiredInput}
+              </span>
+            ) : (
+              <></>
+            )}
           </HeaderDisplay>
           <div className="overflow-auto">
             <div className="w-full">
               <AppFormPanel label="DETAIL">
                 <ShowTextInput
                   label="ORIGIANL AFFILIATION"
-                  content={task.orgianlAffiliation}
+                  content={task.originalAffiliation}
                 />
                 <ShowTextInput
                   label="DESIGN SPECIFICATION"
@@ -203,8 +283,14 @@ export default function TaskEditPage() {
               <AppFormPanel label="ADDITIONAL">
                 <ShowDetailInput label="SYSTEM" content={task.system} />
                 <ShowDetailInput label="PROBLEM" content={task.problem} />
-                <ShowTextInput label="DATE" content={task.dateTime} />
+                <ShowTextInput
+                  label="DATE"
+                  content={dayjs(task.createdTimeTask).format(
+                    "YYYY-MM-DD HH:mm:ss"
+                  )}
+                />
                 <ShowTextInput label="CODE" content={task.code} />
+                <ShowTextInput label="Created by" content={String(username)} />
               </AppFormPanel>
             </div>
           </div>
@@ -215,9 +301,12 @@ export default function TaskEditPage() {
         <Link href={`/task/${task.id}`}>
           <ActionButton label="Cancle" />
         </Link>
-        <Link href={`/task/${task.id}`}>
-          <ActionButton label="Save" onClick={saveTask} />
-        </Link>
+
+        <ActionButton
+          label="Save"
+          onClick={saveTask}
+          disableButton={saveLoading}
+        />
       </div>
     </div>
   );

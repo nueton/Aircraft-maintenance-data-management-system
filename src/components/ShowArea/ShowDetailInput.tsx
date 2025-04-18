@@ -14,7 +14,7 @@ function ShowDetailInput({ label, content }: ShowDetailInputProps) {
         <label htmlFor={id} className="uppercase">
           {label}
         </label>
-        <span id={id} className="w-full flex-1 mt-4">
+        <span id={id} className="w-full flex-1 mt-4 break-all overflow-y-auto">
           {content}
         </span>
       </div>
