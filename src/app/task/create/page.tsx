@@ -54,6 +54,40 @@ export default function TaskCreatePage() {
   //create task error
   const [errorCreateTask, setErrorCreateTask] = useState("");
 
+  //get origianl affiliation
+  const [getAffiliations, setGetAffiliations] = useState<
+    { id: number; affiliationName: string }[]
+  >([]);
+  //affiliation loading
+  const [getAffiliationLoading, setGetAffiliationLoading] = useState(false);
+  //affiliation error
+  const [errorAffiliation, setErrorAffiliation] = useState("");
+  //select affiliation id
+  const [selectAffiliationId, setSelectAffiliationId] = useState({ id: 0 });
+  //select affiliation name
+  const selectAffiliationName =
+    selectAffiliationId.id !== 0
+      ? getAffiliations.find(
+          (affiliation) => affiliation.id == selectAffiliationId.id
+        )?.affiliationName
+      : "Select Affiliation";
+
+  //get model
+  const [getModels, setGetModels] = useState<
+    { id: number; modelName: string }[]
+  >([]);
+  //model loading
+  const [getModelLoading, setGetModelLoading] = useState(false);
+  //model error
+  const [errorModel, setErrorModel] = useState("");
+  //select model id
+  const [selectModelId, setSelectModelId] = useState({ id: 0 });
+  //selec model name
+  const selectModelName =
+    selectModelId.id !== 0
+      ? getModels.find((model) => model.id == selectModelId.id)?.modelName
+      : "Select Model";
+
   //get inspector
   const [inspectors, setInspectors] = useState<Worker[]>([]);
   //inspector loading
@@ -89,6 +123,8 @@ export default function TaskCreatePage() {
   useEffect(() => {
     getInspector();
     getWorker();
+    getAffiliation();
+    getModel();
   }, []);
 
   //search inspector
@@ -161,6 +197,52 @@ export default function TaskCreatePage() {
       );
     }
   }, [queryWorker, getWorkers]);
+
+  //get affiliation
+  async function getAffiliation() {
+    setGetAffiliationLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/Affiliation`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorAffiliation("Error loading Affiliation");
+        setGetAffiliationLoading(false);
+      }
+      setGetAffiliations(res.data);
+      setGetAffiliationLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorAffiliation("Error loading worker name");
+      setGetAffiliationLoading(false);
+    }
+  }
+
+  //get model
+  async function getModel() {
+    setGetModelLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/ModelSpecification`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorModel("Error loading Model");
+        setGetModelLoading(false);
+      }
+      setGetModels(res.data);
+      setGetModelLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorModel("Error loading Model");
+      setGetModelLoading(false);
+    }
+  }
 
   //get inspector
   async function getInspector() {
@@ -322,34 +404,156 @@ export default function TaskCreatePage() {
       <div className="overflow-auto">
         <div className="w-full">
           <AppFormPanel label="DETAIL">
-            <AppTetxtInput
-              label="ORIGIANL AFFILIATION"
-              value={task.originalAffiliation}
-              onTextChange={(originalAffiliation) =>
-                setTask((pre) => ({ ...pre, originalAffiliation }))
-              }
-              inputAlert={
-                requireInput != "" && task.originalAffiliation == ""
-                  ? true
-                  : false
-              }
-            />
-            <AppTetxtInput
-              label="DESIGN SPECIFICATION"
-              value={task.designSpecification}
-              onTextChange={(designSpecification) =>
-                setTask((pre) => ({ ...pre, designSpecification }))
-              }
-              inputAlert={
-                requireInput != "" && task.designSpecification == ""
-                  ? true
-                  : false
-              }
-            />
+            {/* affiliation */}
             <div className="flex flex-col h-20 text-lg">
-              <div>
-                <label className="uppercase">inspector</label>
-              </div>
+              <label className="uppercase">affiliation</label>
+              <Menu>
+                <MenuButton
+                  className={cn(
+                    "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                    requireInput !== "" && task.originalAffiliation == ""
+                      ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                      : "border border-gray-900"
+                  )}
+                >
+                  <div className="text-nowrap w-full truncate">
+                    {getAffiliationLoading
+                      ? "Loading..."
+                      : errorAffiliation
+                      ? errorAffiliation
+                      : selectAffiliationName}
+                  </div>
+                  <DropdownIcon style="ml-1" />
+                </MenuButton>
+                {getAffiliationLoading || errorAffiliation ? (
+                  <MenuItems
+                    anchor="bottom"
+                    className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                  >
+                    {getAffiliationLoading
+                      ? "Loading"
+                      : errorAffiliation
+                      ? errorAffiliation
+                      : ""}
+                  </MenuItems>
+                ) : (
+                  <MenuItems
+                    anchor="bottom"
+                    className="w-[46rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                  >
+                    <div className="max-h-40 overflow-y-scroll">
+                      {getAffiliations
+                        .filter(
+                          (affiliation) =>
+                            affiliation.id !== selectAffiliationId.id
+                        )
+                        .map((c) => {
+                          return (
+                            <div
+                              key={c.id}
+                              onClick={() => {
+                                setSelectAffiliationId({
+                                  ...selectAffiliationId,
+                                  id: c.id,
+                                });
+                                setTask({
+                                  ...task,
+                                  originalAffiliation: c.affiliationName,
+                                });
+
+                                if (selectAffiliationId.id !== c.id) {
+                                  selectAffiliationId.id = c.id;
+                                  task.originalAffiliation = c.affiliationName;
+                                }
+                              }}
+                            >
+                              <MenuItem>
+                                <a className="block data-[focus]:bg-gray-100 py-2">
+                                  {c.affiliationName}
+                                </a>
+                              </MenuItem>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </MenuItems>
+                )}
+              </Menu>
+            </div>
+            {/* design specification */}
+            <div className="flex flex-col h-20 text-lg">
+              <label className="uppercase">design specification</label>
+              <Menu>
+                <MenuButton
+                  className={cn(
+                    "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                    requireInput !== "" && task.designSpecification == ""
+                      ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                      : "border border-gray-900"
+                  )}
+                >
+                  <div className="text-nowrap w-full truncate">
+                    {getModelLoading
+                      ? "Loading..."
+                      : errorModel
+                      ? errorModel
+                      : selectModelName}
+                  </div>
+                  <DropdownIcon style="ml-1" />
+                </MenuButton>
+                {getModelLoading || errorModel ? (
+                  <MenuItems
+                    anchor="bottom"
+                    className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                  >
+                    {getModelLoading ? "Loading" : errorModel ? errorModel : ""}
+                  </MenuItems>
+                ) : (
+                  <MenuItems
+                    anchor="bottom"
+                    className="w-[46rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                  >
+                    <div className="max-h-40 overflow-y-scroll">
+                      {getModels
+                        .filter((model) => model.id !== selectModelId.id)
+                        .map((c) => {
+                          return (
+                            <div
+                              key={c.id}
+                              onClick={() => {
+                                setSelectModelId({
+                                  ...selectModelId,
+                                  id: c.id,
+                                });
+                                setTask({
+                                  ...task,
+                                  designSpecification: c.modelName,
+                                });
+
+                                if (selectModelId.id !== c.id) {
+                                  selectModelId.id = c.id;
+                                  task.designSpecification = c.modelName;
+                                }
+
+                                console.log(task.designSpecification);
+                              }}
+                            >
+                              <MenuItem>
+                                <a className="block data-[focus]:bg-gray-100 py-2">
+                                  {c.modelName}
+                                </a>
+                              </MenuItem>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </MenuItems>
+                )}
+              </Menu>
+            </div>
+            {/* inspector */}
+            <div className="flex flex-col h-20 text-lg">
+              <label className="uppercase">inspector</label>
               <Menu>
                 <MenuButton
                   className={cn(
@@ -377,7 +581,7 @@ export default function TaskCreatePage() {
                 {getInspectorLoading || errorInspector ? (
                   <MenuItems
                     anchor="bottom"
-                    className="w-[45rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
                   >
                     {getInspectorLoading
                       ? "Loading"
@@ -388,7 +592,7 @@ export default function TaskCreatePage() {
                 ) : (
                   <MenuItems
                     anchor="bottom"
-                    className="w-[45rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    className="w-[46rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
                   >
                     <div className="flex bg-white">
                       <input
@@ -471,7 +675,7 @@ export default function TaskCreatePage() {
                   {getWorkerLoading || errorWorker ? (
                     <MenuItems
                       anchor="bottom"
-                      className="w-[45rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                      className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
                     >
                       {getWorkerLoading
                         ? "Loading"
