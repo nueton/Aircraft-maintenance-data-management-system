@@ -7,6 +7,7 @@ type AppInputProps = {
   onTextChange?: (text: string) => void;
   style?: string;
   emailAlert?: string;
+  inputAlert?: boolean;
 };
 
 function AppTextInput({
@@ -15,9 +16,9 @@ function AppTextInput({
   onTextChange,
   style = "",
   emailAlert = "",
+  inputAlert = false,
 }: AppInputProps) {
   const id = useId();
-
   return (
     <div className="flex flex-col h-20 text-lg">
       <div>
@@ -34,7 +35,8 @@ function AppTextInput({
         id={id}
         className={cn(
           "border border-gray-900 pl-2 w-full flex-1 rounded-lg mt-4 focus:outline-none focus:border-2",
-          style
+          style,
+          inputAlert ? "border-red-500 border-2 animate-headShake" : ""
         )}
         maxLength={60}
       />

@@ -14,6 +14,7 @@ import { myapi } from "@/services/myapi";
 import { delay } from "@/libs/delay";
 import { redirect, useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { cn } from "@/helpers/cn";
 import DropdownIcon from "@/assets/icons/DropdownIcon";
 import SearchIcon from "@/assets/icons/SearchIcon";
 import CrossIcon from "@/assets/icons/CrossIcon";
@@ -50,8 +51,9 @@ export default function TaskCreatePage() {
   });
   //create task loading
   const [createTaskLoading, setCreateTaskLoading] = useState(false);
-  //post task
+  //create task error
   const [errorCreateTask, setErrorCreateTask] = useState("");
+
   //get inspector
   const [inspectors, setInspectors] = useState<Worker[]>([]);
   //inspector loading
@@ -66,6 +68,7 @@ export default function TaskCreatePage() {
   //search inspector
   const [searchInspector, setSearchInspector] = useState<Worker[]>([]);
   const [queryInspector, setQueryInspector] = useState({ data: "" });
+
   //get worker
   const [getWorkers, setGetWorkers] = useState<Worker[]>([]);
   //worker loading
@@ -74,7 +77,10 @@ export default function TaskCreatePage() {
   const [errorWorker, setErrorWorker] = useState("");
   //select worker id
   const [selectWorkerId, setSelectWorkerId] = useState<string[]>([]);
-  //select worker name
+  //search worker name
+  const [serachWorker, setSearchWorker] = useState<Worker[]>([]);
+  const [queryWorker, setQueryWorker] = useState({ data: "" });
+
   //requir area
   const [requireInput, setRequireInput] = useState("");
 
@@ -140,6 +146,21 @@ export default function TaskCreatePage() {
       }
     }
   }, [queryInspector, inspectors, selectInspectorName]);
+
+  //serach worker
+  useEffect(() => {
+    if (queryWorker.data == "") {
+      setSearchWorker(getWorkers);
+    } else {
+      setSearchWorker(
+        getWorkers.filter((worker) =>
+          (worker.rank + worker.name + " " + worker.surname).includes(
+            queryWorker.data
+          )
+        )
+      );
+    }
+  }, [queryWorker, getWorkers]);
 
   //get inspector
   async function getInspector() {
@@ -307,10 +328,10 @@ export default function TaskCreatePage() {
               onTextChange={(originalAffiliation) =>
                 setTask((pre) => ({ ...pre, originalAffiliation }))
               }
-              style={
+              inputAlert={
                 requireInput != "" && task.originalAffiliation == ""
-                  ? "border-red-500 border-2"
-                  : ""
+                  ? true
+                  : false
               }
             />
             <AppTetxtInput
@@ -319,10 +340,10 @@ export default function TaskCreatePage() {
               onTextChange={(designSpecification) =>
                 setTask((pre) => ({ ...pre, designSpecification }))
               }
-              style={
+              inputAlert={
                 requireInput != "" && task.designSpecification == ""
-                  ? "border-red-500 border-2"
-                  : ""
+                  ? true
+                  : false
               }
             />
             <div className="flex flex-col h-20 text-lg">
@@ -330,7 +351,20 @@ export default function TaskCreatePage() {
                 <label className="uppercase">inspector</label>
               </div>
               <Menu>
-                <MenuButton className="inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 border border-gray-900 rounded-lg stroke-gray-900 hover:border-2">
+                <MenuButton
+                  className={cn(
+                    "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                    requireInput !== "" && task.inspector == ""
+                      ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                      : "border border-gray-900"
+                  )}
+                  onClick={() => {
+                    setQueryInspector({
+                      ...queryInspector,
+                      data: "",
+                    });
+                  }}
+                >
                   <div className="text-nowrap w-full truncate">
                     {getInspectorLoading
                       ? "Loading..."
@@ -411,7 +445,20 @@ export default function TaskCreatePage() {
               <div className="flex flex-col h-20 text-lg">
                 <label>WORKER</label>
                 <Menu>
-                  <MenuButton className="inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 border border-gray-900 rounded-lg stroke-gray-900 hover:border-2">
+                  <MenuButton
+                    className={cn(
+                      "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                      requireInput !== "" && task.worker == ""
+                        ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                        : "border border-gray-900"
+                    )}
+                    onClick={() => {
+                      setQueryWorker({
+                        ...queryWorker,
+                        data: "",
+                      });
+                    }}
+                  >
                     <div className="text-nowrap w-full truncate">
                       {getWorkerLoading
                         ? "Loading..."
@@ -441,13 +488,22 @@ export default function TaskCreatePage() {
                         <input
                           placeholder="search"
                           className="w-full border border-r-0 my-2 ml-2 border-gray-900 rounded-s-lg hover:outline-none focus:outline-none pl-2"
+                          onChange={(c) => {
+                            setQueryWorker({
+                              ...queryWorker,
+                              data: c.target.value,
+                            });
+                            if (queryWorker.data !== c.target.value) {
+                              queryWorker.data = c.target.value;
+                            }
+                          }}
                         />
                         <div className="flex justify-center place-items-center border border-l-0 px-4 my-2 mr-2 border-gray-900 rounded-e-lg stroke-gray-900 stroke-2">
                           <SearchIcon />
                         </div>
                       </div>
                       <div className="max-h-40 overflow-y-scroll">
-                        {getWorkers
+                        {serachWorker
                           .filter(
                             (user) => !selectWorkerId.includes(user.userId)
                           )
@@ -464,7 +520,21 @@ export default function TaskCreatePage() {
                                       ...prev,
                                       user.userId,
                                     ]);
+                                    if (
+                                      selectWorkerId.findLast(
+                                        (id) => user.userId !== id
+                                      ) ||
+                                      selectWorkerId.length == 0
+                                    ) {
+                                      selectWorkerId.push(user.userId);
+                                    }
                                   }
+                                  setQueryWorker({
+                                    ...queryWorker,
+                                    data: "",
+                                  });
+                                  task.worker = selectWorkerId.toString();
+                                  console.log(task.worker);
                                 }}
                               >
                                 <MenuItem>
@@ -481,17 +551,30 @@ export default function TaskCreatePage() {
                 </Menu>
               </div>
               <div className="h-[7.5rem]">
-                <div className="flex flex-wrap space-y-0 border border-gray-900 max-h-[7.5rem] min-h-10 text-lg pt-1 px-2 mt-4 rounded-lg overflow-y-auto">
+                <div className="flex flex-wrap items-center justify-center max-h-32 min-h-12 text-lg px-2 mt-3 overflow-y-auto">
                   {selectWorkerId.map((userId) => (
-                    <div key={userId} className="mx-2 h-8">
-                      {getWorkerFullName(userId)}
+                    <div
+                      key={userId}
+                      className="m-2 px-3 flex items-center border-[0.1rem] border-gray-900 rounded-full"
+                    >
+                      <label className="mr-2">
+                        {getWorkerFullName(userId)}
+                      </label>
                       <button
                         onClick={() => {
                           setSelectWorkerId((prev) =>
                             prev.filter((id) => id !== userId)
                           );
+                          if (selectWorkerId.find((id) => id == userId)) {
+                            const index = selectWorkerId.indexOf(userId);
+                            if (index > -1) {
+                              selectWorkerId.splice(index, 1);
+                            }
+                            task.worker = selectWorkerId.toString();
+                            return;
+                          }
+                          task.worker = selectWorkerId.toString();
                         }}
-                        className="items-center"
                       >
                         <CrossIcon />
                       </button>
