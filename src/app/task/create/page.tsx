@@ -5,7 +5,7 @@ import AddCreateIcon from "@/assets/icons/AddCreateIcon";
 import ActionButton from "@/components/button/ActionButton";
 import AppDetailInput from "@/components/InputArea/AppDetailInput";
 import AppFormPanel from "@/components/AppFormPanel";
-import AppTetxtInput from "@/components/InputArea/AppTextInput";
+import AppTextInput from "@/components/InputArea/AppTextInput";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 import moment from "moment";
 
@@ -89,7 +89,7 @@ export default function TaskCreatePage() {
       : "Select Model";
 
   //get inspector
-  const [inspectors, setInspectors] = useState<Worker[]>([]);
+  const [getInspectors, setGetInspectors] = useState<Worker[]>([]);
   //inspector loading
   const [getInspectorLoading, setGetInspectorLoading] = useState(false);
   //error get inspector
@@ -135,10 +135,10 @@ export default function TaskCreatePage() {
 
     if (queryInspector.data == "") {
       if (selectInspectorName == "Select Inspector") {
-        setSearchInspector(inspectors);
+        setSearchInspector(getInspectors);
       } else {
         setSearchInspector(
-          inspectors.filter(
+          getInspectors.filter(
             (inspector) =>
               !(
                 inspector.rank +
@@ -152,7 +152,7 @@ export default function TaskCreatePage() {
     } else {
       if (selectInspectorName == "Select Inspector") {
         setSearchInspector(
-          inspectors.filter((inspector) =>
+          getInspectors.filter((inspector) =>
             (
               inspector.rank +
               inspector.name +
@@ -163,7 +163,7 @@ export default function TaskCreatePage() {
         );
       } else {
         setSearchInspector(
-          inspectors.filter(
+          getInspectors.filter(
             (inspector) =>
               (
                 inspector.rank +
@@ -181,7 +181,7 @@ export default function TaskCreatePage() {
         );
       }
     }
-  }, [queryInspector, inspectors, selectInspectorName]);
+  }, [queryInspector, getInspectors, selectInspectorName]);
 
   //serach worker
   useEffect(() => {
@@ -258,7 +258,7 @@ export default function TaskCreatePage() {
         setErrorInspector("Error loading inspector name");
         setGetInspectorLoading(false);
       }
-      setInspectors(res.data);
+      setGetInspectors(res.data);
       setGetInspectorLoading(false);
     } catch (error) {
       console.error(error);
@@ -291,13 +291,13 @@ export default function TaskCreatePage() {
   }
 
   function getInspectorFullName() {
-    const name = inspectors.find(
+    const name = getInspectors.find(
       (c) => c.userId === selectInspectorId.id
     )?.name;
-    const surname = inspectors.find(
+    const surname = getInspectors.find(
       (c) => c.userId === selectInspectorId.id
     )?.surname;
-    const rank = inspectors.find(
+    const rank = getInspectors.find(
       (c) => c.userId === selectInspectorId.id
     )?.rank;
     if (rank == undefined || name == undefined || surname == undefined) {
@@ -804,7 +804,7 @@ export default function TaskCreatePage() {
                 setTask((pre) => ({ ...pre, problem }))
               }
             />
-            <AppTetxtInput
+            <AppTextInput
               label="CODE"
               value={task.code}
               onTextChange={(code) => setTask((pre) => ({ ...pre, code }))}
