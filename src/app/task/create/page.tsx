@@ -105,6 +105,21 @@ export default function TaskCreatePage() {
   const [serachWorker, setSearchWorker] = useState<Worker[]>([]);
   const [queryWorker, setQueryWorker] = useState({ data: "" });
 
+  //get system
+  const [getSystems, setGetSystems] = useState<
+    { id: number; systemName: string }[]
+  >([]);
+  //system loading
+  const [getSystemLoading, setGetSystemLoading] = useState(false);
+  //error get system
+  const [errorSystem, setErrorSystem] = useState("");
+  //select system name
+  const [selectSystemName, setSelectSystemName] = useState<
+    { name: string; repair: boolean }[]
+  >([]);
+  // select system id
+  const [selectSystemId, setSelectSystemId] = useState<number[]>([]);
+
   //requir area
   const [requireInput, setRequireInput] = useState("");
 
@@ -115,6 +130,7 @@ export default function TaskCreatePage() {
     getWorker();
     getAffiliation();
     getModel();
+    getSystem();
   }, []);
 
   //search inspector
@@ -238,6 +254,26 @@ export default function TaskCreatePage() {
     }
   }
 
+  //get system
+  async function getSystem() {
+    setGetSystemLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/SystemAirplane`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorSystem("Error loading system");
+        setGetSystemLoading(false);
+      }
+      setGetSystems(res.data);
+      setGetSystemLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorSystem("Error loading system");
+      setGetSystemLoading(false);
     }
   }
 
@@ -693,11 +729,187 @@ export default function TaskCreatePage() {
 
         <div className="w-full mt-14">
           <AppFormPanel label="ADDITIONAL">
-            <AppDetailInput
-              label="SYSTEM"
-              value={task.system}
-              onTextChange={(system) => setTask((pre) => ({ ...pre, system }))}
-            />
+            {/* system */}
+            <div className="row-span-2">
+              <div className="flex flex-col h-20 text-lg">
+                <label>SYSTEM</label>
+                <Menu>
+                  <MenuButton className="inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2 border border-gray-900">
+                    <div className="text-nowrap w-full truncate">
+                      {getSystemLoading
+                        ? "Loading..."
+                        : errorSystem
+                        ? errorSystem
+                        : "Select system"}
+                    </div>
+                    <DropdownIcon style="ml-1" />
+                  </MenuButton>
+                  {getSystemLoading || errorSystem ? (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      {getSystemLoading
+                        ? "Loading"
+                        : errorSystem
+                        ? errorSystem
+                        : ""}
+                    </MenuItems>
+                  ) : (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[46rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      <div className="flex bg-white">
+                        <input
+                          placeholder="search"
+                          className="w-full border border-r-0 my-2 ml-2 border-gray-900 rounded-s-lg hover:outline-none focus:outline-none pl-2"
+                          // onChange={(c) => {
+                          //   setQueryWorker({
+                          //     ...queryWorker,
+                          //     data: c.target.value,
+                          //   });
+                          //   if (queryWorker.data !== c.target.value) {
+                          //     queryWorker.data = c.target.value;
+                          //   }
+                          // }}
+                        />
+                        <div className="flex justify-center place-items-center border border-l-0 px-4 my-2 mr-2 border-gray-900 rounded-e-lg stroke-gray-900 stroke-2">
+                          <SearchIcon />
+                        </div>
+                      </div>
+                      <div className="max-h-40 overflow-y-scroll">
+                        {getSystems
+                          .filter(
+                            (system) => !selectSystemId.includes(system.id)
+                          )
+                          .map((c) => {
+                            return (
+                              <div
+                                key={c.id}
+                                onClick={() => {
+                                  const system = getSystems.find(
+                                    (system) => system.id == c.id
+                                  );
+                                  if (system) {
+                                    setSelectSystemId([
+                                      ...selectSystemId,
+                                      system.id,
+                                    ]);
+
+                                    setSelectSystemName([
+                                      ...selectSystemName,
+                                      {
+                                        name: system.systemName,
+                                        repair: false,
+                                      },
+                                    ]);
+
+                                    // if (
+                                    //   selectSystemId.length == 0 ||
+                                    //   selectSystemId[
+                                    //     selectSystemId.length - 1
+                                    //   ] !== system.id
+                                    // ) {
+                                    //   selectSystemId.push(system.id);
+                                    //   selectSystemName.push({
+                                    //     name: system.systemName,
+                                    //     repair: false,
+                                    //   });
+                                    //   console.log(selectSystemId);
+                                    // }
+
+                                    // console.log(selectSystemName);
+
+                                    // setSelectSystemId(() => [
+                                    //   ...selectSystemId,
+                                    //   system.id,
+                                    // ]);
+                                    // console.log(
+                                    //   selectSystemId[selectSystemId.length] !==
+                                    //     system.id
+                                    // );
+                                    // if (
+                                    //   selectSystemId[selectSystemId.length] !==
+                                    //     system.id ||
+                                    //   selectSystemId.length == 0
+                                    // ) {
+                                    //   selectSystemId.push(system.id);
+                                    //   selectSystemName.push({
+                                    //     name: system.systemName,
+                                    //     repair: false,
+                                    //   });
+                                    //   console.log("in condition");
+                                    // }
+                                  }
+                                }}
+                                //   setQueryWorker({
+                                //     ...queryWorker,
+                                //     data: "",
+                                //   });
+                                //   task.worker = selectWorkerId.toString();
+                                // }}
+                              >
+                                <MenuItem>
+                                  <a className="block data-[focus]:bg-gray-100 py-2">
+                                    {c.systemName}
+                                  </a>
+                                </MenuItem>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </MenuItems>
+                  )}
+                </Menu>
+              </div>
+              <div className="h-[7.5rem]">
+                <div className="flex flex-col max-h-32 min-h-12 text-lg mt-3 overflow-y-auto">
+                  {selectSystemName.map((system) => (
+                    <div
+                      key={system.name}
+                      className="flex items-center mb-3 py-[0.2rem] pl-2"
+                    >
+                      <label className="w-52">{system.name}</label>
+                      <div className="flex flex-1 justify-end items-center">
+                        <label className="mr-2">
+                          This system need to replace part
+                        </label>
+                        <input
+                          className="w-4 h-4 mr-2"
+                          type="checkbox"
+                          onClick={(c) => {
+                            system.repair = c.currentTarget.checked;
+                          }}
+                        />
+                        <button
+                          className="mr-2"
+                          onClick={() => {
+                            const searchId = selectSystemName.findIndex(
+                              (search) => search.name == system.name
+                            );
+                            setSelectSystemId((prev) =>
+                              prev.filter(
+                                (id) => id !== selectSystemId[searchId]
+                              )
+                            );
+                            setSelectSystemName((prev) =>
+                              prev.filter(
+                                (system) =>
+                                  system.name !==
+                                  selectSystemName[searchId].name
+                              )
+                            );
+                          }}
+                        >
+                          <CrossIcon />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             <AppDetailInput
               label="PROBLEM"
               value={task.problem}
