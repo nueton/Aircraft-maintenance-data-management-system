@@ -62,14 +62,10 @@ export default function TaskCreatePage() {
   const [getAffiliationLoading, setGetAffiliationLoading] = useState(false);
   //affiliation error
   const [errorAffiliation, setErrorAffiliation] = useState("");
-  //select affiliation id
-  const [selectAffiliationId, setSelectAffiliationId] = useState({ id: 0 });
   //select affiliation name
   const selectAffiliationName =
-    selectAffiliationId.id !== 0
-      ? getAffiliations.find(
-          (affiliation) => affiliation.id == selectAffiliationId.id
-        )?.affiliationName
+    task.originalAffiliation !== ""
+      ? task.originalAffiliation
       : "Select Affiliation";
 
   //get model
@@ -80,13 +76,9 @@ export default function TaskCreatePage() {
   const [getModelLoading, setGetModelLoading] = useState(false);
   //model error
   const [errorModel, setErrorModel] = useState("");
-  //select model id
-  const [selectModelId, setSelectModelId] = useState({ id: 0 });
   //selec model name
   const selectModelName =
-    selectModelId.id !== 0
-      ? getModels.find((model) => model.id == selectModelId.id)?.modelName
-      : "Select Model";
+    task.designSpecification !== "" ? task.designSpecification : "Select Model";
 
   //get inspector
   const [getInspectors, setGetInspectors] = useState<Worker[]>([]);
@@ -94,11 +86,9 @@ export default function TaskCreatePage() {
   const [getInspectorLoading, setGetInspectorLoading] = useState(false);
   //error get inspector
   const [errorInspector, setErrorInspector] = useState("");
-  //select inspector id
-  const [selectInspectorId, setSelectInspectorId] = useState({ id: "" });
   //select inspector name
   const selectInspectorName =
-    selectInspectorId.id !== "" ? getInspectorFullName() : "Select Inspector";
+    task.inspector !== "" ? task.inspector : "Select Inspector";
   //search inspector
   const [searchInspector, setSearchInspector] = useState<Worker[]>([]);
   const [queryInspector, setQueryInspector] = useState({ data: "" });
@@ -129,59 +119,17 @@ export default function TaskCreatePage() {
 
   //search inspector
   useEffect(() => {
-    if (selectInspectorName == undefined) {
-      return;
-    }
-
-    if (queryInspector.data == "") {
-      if (selectInspectorName == "Select Inspector") {
-        setSearchInspector(getInspectors);
-      } else {
-        setSearchInspector(
-          getInspectors.filter(
-            (inspector) =>
-              !(
-                inspector.rank +
-                inspector.name +
-                " " +
-                inspector.surname
-              ).includes(selectInspectorName)
-          )
-        );
-      }
+    if (queryInspector.data == "" && task.inspector == "Select Inspector") {
     } else {
-      if (selectInspectorName == "Select Inspector") {
-        setSearchInspector(
-          getInspectors.filter((inspector) =>
-            (
-              inspector.rank +
-              inspector.name +
-              " " +
-              inspector.surname
-            ).includes(queryInspector.data)
+      setSearchInspector(
+        getInspectors.filter((inspector) =>
+          (inspector.rank + inspector.name + " " + inspector.surname).includes(
+            queryInspector.data
           )
-        );
-      } else {
-        setSearchInspector(
-          getInspectors.filter(
-            (inspector) =>
-              (
-                inspector.rank +
-                inspector.name +
-                " " +
-                inspector.surname
-              ).includes(queryInspector.data) &&
-              !(
-                inspector.rank +
-                inspector.name +
-                " " +
-                inspector.surname
-              ).includes(selectInspectorName)
-          )
-        );
-      }
+        )
+      );
     }
-  }, [queryInspector, getInspectors, selectInspectorName]);
+  }, [queryInspector, getInspectors, task.inspector]);
 
   //serach worker
   useEffect(() => {
@@ -290,22 +238,6 @@ export default function TaskCreatePage() {
     }
   }
 
-  function getInspectorFullName() {
-    const name = getInspectors.find(
-      (c) => c.userId === selectInspectorId.id
-    )?.name;
-    const surname = getInspectors.find(
-      (c) => c.userId === selectInspectorId.id
-    )?.surname;
-    const rank = getInspectors.find(
-      (c) => c.userId === selectInspectorId.id
-    )?.rank;
-    if (rank == undefined || name == undefined || surname == undefined) {
-      return;
-    } else {
-      const fullName = rank + name + " " + surname;
-      task.inspector = fullName;
-      return fullName;
     }
   }
 
@@ -445,26 +377,18 @@ export default function TaskCreatePage() {
                       {getAffiliations
                         .filter(
                           (affiliation) =>
-                            affiliation.id !== selectAffiliationId.id
+                            affiliation.affiliationName !==
+                            task.originalAffiliation
                         )
                         .map((c) => {
                           return (
                             <div
                               key={c.id}
                               onClick={() => {
-                                setSelectAffiliationId({
-                                  ...selectAffiliationId,
-                                  id: c.id,
-                                });
                                 setTask({
                                   ...task,
                                   originalAffiliation: c.affiliationName,
                                 });
-
-                                if (selectAffiliationId.id !== c.id) {
-                                  selectAffiliationId.id = c.id;
-                                  task.originalAffiliation = c.affiliationName;
-                                }
                               }}
                             >
                               <MenuItem>
@@ -515,27 +439,19 @@ export default function TaskCreatePage() {
                   >
                     <div className="max-h-40 overflow-y-scroll">
                       {getModels
-                        .filter((model) => model.id !== selectModelId.id)
+                        .filter(
+                          (model) =>
+                            model.modelName !== task.designSpecification
+                        )
                         .map((c) => {
                           return (
                             <div
                               key={c.id}
                               onClick={() => {
-                                setSelectModelId({
-                                  ...selectModelId,
-                                  id: c.id,
-                                });
                                 setTask({
                                   ...task,
                                   designSpecification: c.modelName,
                                 });
-
-                                if (selectModelId.id !== c.id) {
-                                  selectModelId.id = c.id;
-                                  task.designSpecification = c.modelName;
-                                }
-
-                                console.log(task.designSpecification);
                               }}
                             >
                               <MenuItem>
@@ -603,9 +519,6 @@ export default function TaskCreatePage() {
                             ...queryInspector,
                             data: c.target.value,
                           });
-                          if (queryInspector.data !== c.target.value) {
-                            queryInspector.data = c.target.value;
-                          }
                         }}
                       />
                       <div className="flex justify-center place-items-center border border-l-0 px-4 my-2 mr-2 border-gray-900 rounded-e-lg stroke-gray-900 stroke-2">
@@ -613,38 +526,44 @@ export default function TaskCreatePage() {
                       </div>
                     </div>
                     <div className="max-h-40 overflow-y-scroll">
-                      {searchInspector.map((c) => {
-                        return (
-                          <div
-                            key={c.userId}
-                            onClick={() => {
-                              setSelectInspectorId({
-                                ...selectInspectorId,
-                                id: c.userId,
-                              });
-                              if (selectInspectorId.id !== c.userId) {
-                                selectInspectorId.id = c.userId;
-                              }
-                              setQueryInspector({
-                                ...queryInspector,
-                                data: "",
-                              });
-                            }}
-                          >
-                            <MenuItem>
-                              <a className="block data-[focus]:bg-gray-100 py-2">
-                                {c.rank + c.name + " " + c.surname}
-                              </a>
-                            </MenuItem>
-                          </div>
-                        );
-                      })}
+                      {searchInspector
+                        .filter(
+                          (inspector) =>
+                            inspector.rank +
+                              inspector.name +
+                              " " +
+                              inspector.surname !==
+                            task.inspector
+                        )
+                        .map((c) => {
+                          return (
+                            <div
+                              key={c.userId}
+                              onClick={() => {
+                                setTask({
+                                  ...task,
+                                  inspector: c.rank + c.name + " " + c.surname,
+                                });
+                                setQueryInspector({
+                                  ...queryInspector,
+                                  data: "",
+                                });
+                              }}
+                            >
+                              <MenuItem>
+                                <a className="block data-[focus]:bg-gray-100 py-2">
+                                  {c.rank + c.name + " " + c.surname}
+                                </a>
+                              </MenuItem>
+                            </div>
+                          );
+                        })}
                     </div>
                   </MenuItems>
                 )}
               </Menu>
             </div>
-
+            {/* worker */}
             <div className="row-span-2">
               <div className="flex flex-col h-20 text-lg">
                 <label>WORKER</label>
@@ -697,9 +616,6 @@ export default function TaskCreatePage() {
                               ...queryWorker,
                               data: c.target.value,
                             });
-                            if (queryWorker.data !== c.target.value) {
-                              queryWorker.data = c.target.value;
-                            }
                           }}
                         />
                         <div className="flex justify-center place-items-center border border-l-0 px-4 my-2 mr-2 border-gray-900 rounded-e-lg stroke-gray-900 stroke-2">
@@ -724,21 +640,11 @@ export default function TaskCreatePage() {
                                       ...prev,
                                       user.userId,
                                     ]);
-                                    if (
-                                      selectWorkerId.findLast(
-                                        (id) => user.userId !== id
-                                      ) ||
-                                      selectWorkerId.length == 0
-                                    ) {
-                                      selectWorkerId.push(user.userId);
-                                    }
                                   }
                                   setQueryWorker({
                                     ...queryWorker,
                                     data: "",
                                   });
-                                  task.worker = selectWorkerId.toString();
-                                  console.log(task.worker);
                                 }}
                               >
                                 <MenuItem>
@@ -769,15 +675,6 @@ export default function TaskCreatePage() {
                           setSelectWorkerId((prev) =>
                             prev.filter((id) => id !== userId)
                           );
-                          if (selectWorkerId.find((id) => id == userId)) {
-                            const index = selectWorkerId.indexOf(userId);
-                            if (index > -1) {
-                              selectWorkerId.splice(index, 1);
-                            }
-                            task.worker = selectWorkerId.toString();
-                            return;
-                          }
-                          task.worker = selectWorkerId.toString();
                         }}
                       >
                         <CrossIcon />
