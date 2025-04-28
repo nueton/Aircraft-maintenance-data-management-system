@@ -254,47 +254,51 @@ export default function TaskCreatePage() {
   }
 
   async function createTask() {
-    //when second attempt
-    setRequireInput("");
-    setErrorCreateTask("");
-    //check require area
-    if (
-      task.originalAffiliation == "" ||
-      task.designSpecification == "" ||
-      task.worker == "" ||
-      task.inspector == ""
-    ) {
-      setRequireInput("Require Input");
-      return;
-    }
-    //input created user
-    const createdUserId = localStorage.getItem("nameIdentifier");
-    if (createdUserId) task.createdUserId = createdUserId;
-    //start to post api
-    setCreateTaskLoading(true);
-    //check loading
-    await delay();
-    try {
-      //post api
-      const res = await myapi.post("/Task", task, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (res.status !== 200) {
-        setErrorCreateTask(
-          "We can't process your request. Please submit again."
-        );
-        setCreateTaskLoading(false);
-        return;
-      }
-      setCreateTaskLoading(false);
-      router.push(`/task/${res.data.id}`);
-    } catch (error) {
-      console.error(error);
-      setErrorCreateTask("We can't process your request. Please submit again.");
-      setCreateTaskLoading(false);
-    }
+    // task.worker = selectWorkerId.toString();
+    // task.system = selectSystemName
+    //   .map((system) => system.name + ":" + system.repair)
+    //   .toString();
+    // //when second attempt
+    // setRequireInput("");
+    // setErrorCreateTask("");
+    // //check require area
+    // if (
+    //   task.originalAffiliation == "" ||
+    //   task.designSpecification == "" ||
+    //   task.worker == "" ||
+    //   task.inspector == ""
+    // ) {
+    //   setRequireInput("Require Input");
+    //   return;
+    // }
+    // //input created user
+    // const createdUserId = localStorage.getItem("nameIdentifier");
+    // if (createdUserId) task.createdUserId = createdUserId;
+    // //start to post api
+    // setCreateTaskLoading(true);
+    // //check loading
+    // await delay();
+    // try {
+    //   //post api
+    //   const res = await myapi.post("/Task", task, {
+    //     headers: {
+    //       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    //     },
+    //   });
+    //   if (res.status !== 200) {
+    //     setErrorCreateTask(
+    //       "We can't process your request. Please submit again."
+    //     );
+    //     setCreateTaskLoading(false);
+    //     return;
+    //   }
+    //   setCreateTaskLoading(false);
+    //   router.push(`/task/${res.data.id}`);
+    // } catch (error) {
+    //   console.error(error);
+    //   setErrorCreateTask("We can't process your request. Please submit again.");
+    //   setCreateTaskLoading(false);
+    // }
   }
 
   //check token and expire time
