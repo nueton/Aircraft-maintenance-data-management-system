@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { myapi } from "@/services/myapi";
 import { delay } from "@/libs/delay";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import LoginInput from "@/components/InputArea/LoginInput";
 import { cn } from "@/helpers/cn";
+import { AxiosError } from "axios";
 
 export default function Login() {
+  const hasMounted = useRef(false);
+  const [state, setState] = useState(false);
+
   const [user, setUser] = useState({
     username: "",
     password: "",
@@ -27,11 +31,22 @@ export default function Login() {
     divHeight: "h-[400px]",
   });
 
-  const [newLogin, setnewLogin] = useState(true);
-
   const [requireInput, setRequireInput] = useState("");
 
   const router = useRouter();
+
+  useEffect(() => {
+    // setState(true);
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      if (typeof window !== "undefined") {
+        if (localStorage.getItem("nameIdentifier") !== null) {
+          router.push(`task`);
+        }
+        setState(true);
+      }
+    }
+  }, []);
 
   async function Login() {
     //return to inital state if not first attempt
@@ -64,6 +79,10 @@ export default function Login() {
         setloginLoading(false);
         return;
       }
+      if (res.data == true) {
+        router.push(`/login/${encodeURIComponent(user.username)}`);
+        return;
+      }
       setAccessToken(res.data);
       //The first time that code run setstate didn't work, but post reponse, so set again to ensure data
       if (accessToken.accessToken == "") {
@@ -84,12 +103,11 @@ export default function Login() {
       convertJsonAndStoreData();
       //finish loading
       setloginLoading(false);
-      setnewLogin(false);
       //push to task page
       router.push(`/task`);
-    } catch (error) {
-      console.log(error);
-      setErrorlogin("Invalid Username or Password");
+    } catch (err) {
+      const error = err as AxiosError;
+      setErrorlogin(String(error.response?.data));
       setloginLoading(false);
       setDecorationError({
         ...decorationError,
@@ -119,6 +137,12 @@ export default function Login() {
         `/Task/allTask/${localStorage.getItem("nameIdentifier")}`
       );
       localStorage.setItem("pathName", "TASKS");
+    } else if (localStorage.getItem("role") == "inspector") {
+      localStorage.setItem(
+        "path",
+        `/Task/inspectorAllTask/${localStorage.getItem("nameIdentifier")}`
+      );
+      localStorage.setItem("pathName", "TASKS");
     }
   }
 
@@ -132,11 +156,6 @@ export default function Login() {
     }
   }
 
-  //protect login at the same time
-  if (newLogin && localStorage.getItem("nameIdentifier") != null) {
-    redirect(`task`);
-  }
-
   return (
     <div className="flex h-screen justify-center items-center">
       <div
@@ -145,64 +164,72 @@ export default function Login() {
           decorationError.divHeight
         )}
       >
-        <span className="text-3xl font-semibold text-center pt-16 pb-10">
-          WELCOME
-        </span>
-        <LoginInput
-          onTextChange={(username) => {
-            setUser((pre) => ({ ...pre, username }));
-            if (user.username !== username) {
-              user.username = username;
-            }
-            checkInput();
-          }}
-          placeHolder="Username"
-          style={user.username == "" && requireInput ? "border-red-500" : ""}
-        />
-        <LoginInput
-          onTextChange={(password) => {
-            setUser((pre) => ({ ...pre, password }));
-            if (user.password !== password) {
-              user.password = password;
-            }
-            checkInput();
-          }}
-          placeHolder="Password"
-          style={
-            user.password == "" && requireInput
-              ? "border-red-500 mt-16"
-              : "mt-16"
-          }
-        />
-        {/* check if error has message */}
-        {errorlogin != "" ? (
-          <span className="mt-6 font-semibold text-red-500">{errorlogin}</span>
+        {!state ? (
+          <>
+            <div className="h-full content-center text-xl font-semibold">
+              Loading...
+            </div>
+          </>
         ) : (
-          <></>
+          <>
+            <span className="text-3xl font-semibold text-center pt-16 pb-10">
+              WELCOME
+            </span>
+            <LoginInput
+              onTextChange={(username) => {
+                setUser((pre) => ({ ...pre, username }));
+                if (user.username !== username) {
+                  user.username = username;
+                }
+                checkInput();
+              }}
+              placeHolder="Username"
+              style={
+                user.username == "" && requireInput ? "border-red-500" : ""
+              }
+            />
+            <LoginInput
+              onTextChange={(password) => {
+                setUser((pre) => ({ ...pre, password }));
+                if (user.password !== password) {
+                  user.password = password;
+                }
+                checkInput();
+              }}
+              placeHolder="Password"
+              style={
+                user.password == "" && requireInput
+                  ? "border-red-500 mt-16"
+                  : "mt-16"
+              }
+            />
+            {/* check if error has message */}
+            {errorlogin != "" ? (
+              <span className="mt-6 font-semibold text-red-500">
+                {errorlogin}
+              </span>
+            ) : (
+              <></>
+            )}
+            {requireInput && (user.password == "" || user.username == "") ? (
+              <span className="mt-6 font-semibold text-red-500">
+                {requireInput}
+              </span>
+            ) : (
+              <></>
+            )}
+            <button
+              className={cn(
+                "w-4/5 border-[1.5px] border-gray-900 py-2 rounded-full cursor-pointer transition duration-100 ease-in-out hover:scale-105 disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed disabled:border-gray-400 disabled:hover:scale-100 disabled:font-semibold",
+                decorationError.buttonHeight
+              )}
+              onClick={Login}
+              disabled={loginLoading}
+            >
+              Login
+            </button>
+          </>
         )}
-        {requireInput && (user.password == "" || user.username == "") ? (
-          <span className="mt-6 font-semibold text-red-500">
-            {requireInput}
-          </span>
-        ) : (
-          <></>
-        )}
-        <button
-          className={cn(
-            "w-4/5 border-[1.5px] border-gray-900 py-2 rounded-full cursor-pointer transition duration-100 ease-in-out hover:scale-105 disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed disabled:border-gray-400 disabled:hover:scale-100 disabled:font-semibold",
-            decorationError.buttonHeight
-          )}
-          onClick={Login}
-          disabled={loginLoading}
-        >
-          Login
-        </button>
-        <span
-          className="text-center pt-16 text-blue-700 underline cursor-pointer"
-          onClick={() => router.push(`/login/register`)}
-        >
-          Register User
-        </span>
       </div>
     </div>
   );
