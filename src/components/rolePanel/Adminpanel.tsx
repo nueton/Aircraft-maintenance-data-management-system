@@ -15,7 +15,7 @@ function Adminpanel() {
     if (window.location.pathname !== "/task") {
       router.push(`/task`);
     } else {
-      location.reload();
+      router.refresh();
     }
   }
   //store new api path for processed task
@@ -25,7 +25,7 @@ function Adminpanel() {
     if (window.location.pathname !== "/task") {
       router.push(`/task`);
     } else {
-      location.reload();
+      router.refresh();
     }
   }
   return (

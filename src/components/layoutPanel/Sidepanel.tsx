@@ -1,25 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SideButton from "../button/SideButton";
 import StopIcon from "@/assets/icons/StopIcon";
-import { redirect } from "next/navigation";
 import Supervisorpanel from "../rolePanel/Supervisorpanel";
 import Adminpanel from "../rolePanel/Adminpanel";
 import Userpanel from "../rolePanel/Userpanel";
+import InspectorPanel from "../rolePanel/InspectorPanel";
 
 function Sidepanel() {
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== undefined) {
+      setRole(localStorage.getItem("role") || "");
+    }
+  }, []);
+
   //all user
   function Logout() {
     localStorage.clear();
-    redirect(`/login`);
+    window.location.href = "/login";
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }
 
   function checkRole() {
-    if (localStorage.getItem("role") == "supervisor") {
+    if (role == "supervisor") {
       return <Supervisorpanel />;
-    } else if (localStorage.getItem("role") == "admin") {
+    } else if (role == "admin") {
       return <Adminpanel />;
-    } else if (localStorage.getItem("role") == "user") {
+    } else if (role == "user") {
       return <Userpanel />;
+    } else if (role == "inspector") {
+      return <InspectorPanel />;
     }
   }
 

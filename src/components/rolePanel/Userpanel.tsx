@@ -17,7 +17,7 @@ function Userpanel() {
     if (window.location.pathname !== "/task") {
       router.push(`/task`);
     } else {
-      location.reload();
+      router.refresh();
     }
   }
   //store path api with current user id that get all task, then reload to get api with new path if stay in the same path(task)
@@ -30,7 +30,7 @@ function Userpanel() {
     if (window.location.pathname !== "/task") {
       router.push(`/task`);
     } else {
-      location.reload();
+      router.refresh();
     }
   }
 
