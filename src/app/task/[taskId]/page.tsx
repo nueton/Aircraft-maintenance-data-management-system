@@ -8,6 +8,7 @@ import RemindTags from "@/components/Tag/RemindTags";
 import ShowDetailInput from "@/components/ShowArea/ShowDetailInput";
 import ShowTextInput from "@/components/ShowArea/ShowTetxtInput";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
+import HeaderDetailDisplay from "@/components/TextDisplay/HeaderDetailDisplay";
 import AddCreateIcon from "@/assets/icons/AddCreateIcon";
 import dayjs from "dayjs";
 import moment from "moment";
@@ -15,57 +16,64 @@ import Link from "next/link";
 
 import { delay } from "@/libs/delay";
 import { myapi } from "@/services/myapi";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { cn } from "@/helpers/cn";
 
 type Task = {
   id: number;
-  code: string;
-  createdTimeTask: Date;
-  designSpecification: string;
-  inspector: string;
-  jch: string;
   originalAffiliation: string;
-  problem: string;
-  taskStatus: number;
-  system: string;
+  designSpecification: string;
+  jcn: string;
   worker: string;
-  repairReportId: number;
+  system: string;
+  problem: string;
+  code: string;
+  taskStatus: number;
+  createdTimeTask: Date;
   createdUserId: string;
-  changeStatusUserId: string;
+  inspectorChangeTime: Date;
+  inspectorId: string;
+  adminChangeTime: Date;
+  adminId: string;
+  repairReportId: number;
 };
 
 export default function TaskDetailPage() {
+  //check date
+  const [check, setCheck] = useState(false);
+  const [role, setRole] = useState("");
+
   //taskid, get task
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState<Task>({
     id: 0,
-    code: "",
-    createdTimeTask: new Date(),
-    designSpecification: "",
-    inspector: "",
-    jch: "",
     originalAffiliation: "",
-    problem: "",
-    taskStatus: 0,
-    system: "",
+    designSpecification: "",
+    jcn: "",
     worker: "",
-    repairReportId: 0,
+    system: "",
+    problem: "",
+    code: "",
+    taskStatus: 0,
+    createdTimeTask: new Date(),
     createdUserId: "",
-    changeStatusUserId: "",
+    inspectorChangeTime: new Date(),
+    inspectorId: "",
+    adminChangeTime: new Date(),
+    adminId: "",
+    repairReportId: 0,
   });
   const [getTaskLoading, setGetTaskLoading] = useState(false);
   const [errorLoadTask, setErrorLoadTask] = useState("");
   //username that create task
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState({
+    createdUser: "",
+    inspector: "",
+    admin: "",
+  });
   const [getUsernameLoading, setGetUsernameLoading] = useState(false);
   const [errorLoadUsername, setErrorLoadUsername] = useState("");
-  //username that change status
-  const [changeStatusUsername, setChangeStatusUsername] = useState("");
-  const [getChangeStatusUsernameLoading, setGetChangeStatusUsernameLoading] =
-    useState(false);
-  const [errorLoadChangeStatusUsername, setErrorLoadChangeStatusUsername] =
-    useState("");
   //disable button
   const [editLoading, setEditLoading] = useState(false);
   const [createRepairLoading, setCreateRepairLoading] = useState(false);
@@ -73,26 +81,50 @@ export default function TaskDetailPage() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    CheckDate();
+    if (typeof window !== undefined) {
+      setRole(localStorage.getItem("role") || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   //get task from api
   useEffect(() => {
-    if (taskId) {
+    if (check && taskId) {
       getTask(Number(taskId));
+      getUsername(Number(taskId));
     }
-  }, [taskId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
 
-  //use id from task to find created username from user db
-  useEffect(() => {
-    if (task.createdUserId) {
-      getUsername(String(task.createdUserId));
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        setCheck(false);
+        return;
+      } else {
+        setCheck(true);
+        return;
+      }
+    } catch (error) {
+      console.log(error);
     }
-  }, [task.createdUserId]);
-
-  //use id from task to find changed status username from user db
-  useEffect(() => {
-    if (task.changeStatusUserId) {
-      getChangeStatusUsername(String(task.changeStatusUserId));
-    }
-  }, [task.changeStatusUserId]);
+  }
 
   //get detail task
   async function getTask(id: number) {
@@ -119,12 +151,12 @@ export default function TaskDetailPage() {
   }
 
   //get created username
-  async function getUsername(id: string) {
+  async function getUsername(id: number) {
     setGetUsernameLoading(true);
     await delay();
     try {
       //get created username from id in task
-      const res = await myapi.get(`/Auth/${id}`, {
+      const res = await myapi.get(`/task/detailWithUsername/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -140,32 +172,6 @@ export default function TaskDetailPage() {
       console.error(error);
       setErrorLoadUsername("Error Loading Username");
       setGetUsernameLoading(false);
-    }
-  }
-
-  //get changed status username
-  async function getChangeStatusUsername(id: string) {
-    try {
-      setGetChangeStatusUsernameLoading(true);
-      await delay();
-      const res = await myapi.get(`/Auth/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (res.status !== 200) {
-        setErrorLoadChangeStatusUsername(
-          "Error Loading Change Statuse Username"
-        );
-        setGetChangeStatusUsernameLoading(false);
-        return;
-      }
-      setChangeStatusUsername(res.data);
-      setGetChangeStatusUsernameLoading(false);
-    } catch (error) {
-      console.error(error);
-      setErrorLoadChangeStatusUsername("Error Loading Change Statuse Username");
-      setGetChangeStatusUsernameLoading(false);
     }
   }
 
@@ -196,84 +202,130 @@ export default function TaskDetailPage() {
     router.push(`/task`);
   }
 
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  }
-
   return (
     <div className="flex flex-col h-[85vh]">
-      {getTaskLoading ||
-      getUsernameLoading ||
-      getChangeStatusUsernameLoading ? (
+      {getTaskLoading || getUsernameLoading ? (
         <>
           <HeaderDisplay label="VIEW TASK REPORT" />
           <span>Loading....</span>
         </>
-      ) : errorLoadTask ||
-        errorLoadUsername ||
-        errorLoadChangeStatusUsername ? (
+      ) : errorLoadTask || errorLoadUsername ? (
         <>
           <HeaderDisplay label="VIEW TASK REPORT" />
           <span>Error Loading Task</span>
         </>
       ) : (
         <>
-          <HeaderDisplay label="VIEW TASK REPORT">
+          <HeaderDetailDisplay label="VIEW TASK REPORT" detail={task.jcn}>
             <RemindTags status={task.taskStatus} />
-          </HeaderDisplay>
+          </HeaderDetailDisplay>
           <div className="overflow-auto">
             <div className="w-full">
               <AppFormPanel label="DETAIL">
                 <ShowTextInput
-                  label="ORIGIANL AFFILIATION"
+                  label="กองบิน"
                   content={task.originalAffiliation}
                 />
-                <ShowTextInput
-                  label="DESIGN SPECIFICATION"
-                  content={task.designSpecification}
-                />
-                <ShowTextInput label="JCH" content={task.jch} />
-                <ShowDetailInput label="WORKER" content={task.worker} />
-                <ShowTextInput label="INSPECTOR" content={task.inspector} />
+                <div className="grid grid-cols-2 gap-5">
+                  <ShowTextInput
+                    label="รุ่นเครื่องบิน"
+                    content={task.designSpecification}
+                  />
+                  <ShowTextInput
+                    label="หมายเลขเครื่องบิน"
+                    content={task.code}
+                  />
+                </div>
+
+                <ShowDetailInput label="ผู้ปฏิบัติงาน">
+                  {task.worker.split(",").map((worker) => {
+                    return (
+                      <label key={worker} className="mb-1">
+                        {worker}
+                      </label>
+                    );
+                  })}
+                </ShowDetailInput>
+              </AppFormPanel>
+            </div>
+
+            <div
+              className={cn("w-full mt-14", task.system == "" ? "hidden" : "")}
+            >
+              <AppFormPanel label="ADDITIONAL">
+                <ShowDetailInput label="ระบบปฏิบัติการ">
+                  {task.system
+                    .split(",")
+                    .map((c) => c.split(":"))
+                    .map((c) => {
+                      return (
+                        <div key={c[0]} className="flex">
+                          <label className="w-60">{c[0]}</label>
+                          {c[1] == "true" ? <label>ขอเบิกอะไหล่</label> : <></>}
+                        </div>
+                      );
+                    })}
+                </ShowDetailInput>
+                <ShowDetailInput label="ปัญหา">
+                  <label className="break-all">{task.problem}</label>
+                </ShowDetailInput>
               </AppFormPanel>
             </div>
 
             <div className="w-full mt-14">
-              <AppFormPanel label="ADDITIONAL">
-                <ShowDetailInput label="SYSTEM" content={task.system} />
-                <ShowDetailInput label="PROBLEM" content={task.problem} />
-                <ShowTextInput
-                  label="DATE"
-                  content={dayjs(task.createdTimeTask).format(
-                    "YYYY-MM-DD HH:mm:ss"
-                  )}
-                />
-                <ShowTextInput label="CODE" content={task.code} />
-                <ShowTextInput label="Created by" content={String(username)} />
-                {task.changeStatusUserId !=
-                "00000000-0000-0000-0000-000000000000" ? (
-                  // check that task has change status id
+              <AppFormPanel label="INFORMATION">
+                <div className="grid grid-cols-2 gap-5">
                   <ShowTextInput
-                    label="CHANGED STATUS BY"
-                    content={String(changeStatusUsername)}
+                    label="สร้างโดย"
+                    content={username.createdUser}
                   />
-                ) : (
-                  <></>
-                )}
+                  <ShowTextInput
+                    label="สร้างเมื่อ"
+                    content={dayjs(task.createdTimeTask).format(
+                      "YYYY-MM-DD HH:mm:ss"
+                    )}
+                  />
+                </div>
+                <div></div>
+                <div className="grid grid-cols-2 gap-5">
+                  <ShowTextInput
+                    label="ผู้ตรวจสอบ"
+                    content={username.inspector}
+                  />
+                  {task.taskStatus > 1 ? (
+                    <ShowTextInput
+                      label="ผู้ตรวจสอบตรวจสอบเมื่อ"
+                      content={dayjs(task.inspectorChangeTime).format(
+                        "YYYY-MM-DD HH:mm:ss"
+                      )}
+                    />
+                  ) : (
+                    <></>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-5">
+                  {username.admin !== "" ? (
+                    // check that task has change status id
+                    <>
+                      <ShowTextInput label="แอดมิน" content={username.admin} />
+                      <ShowTextInput
+                        label="แอดมินตรวจสอบเมื่อ"
+                        content={dayjs(task.adminChangeTime).format(
+                          "YYYY-MM-DD HH:mm:ss"
+                        )}
+                      />
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                </div>
               </AppFormPanel>
             </div>
           </div>
 
           {/*button*/}
           <div className="mt-16 flex justify-end">
-            {localStorage.getItem("role") == "user" ||
-            localStorage.getItem("role") == "supervisor" ? (
+            {role !== "admin" ? (
               // normal return to task
               <Link href={`/task`}>
                 <ActionButton label="Return" iconLeft={<LeftIcon />} />
@@ -284,14 +336,25 @@ export default function TaskDetailPage() {
                 label="Return"
                 iconLeft={<LeftIcon />}
                 onClick={
-                  task.taskStatus == 1 || task.taskStatus == 4
+                  task.taskStatus == 2 || task.taskStatus == 5
                     ? taskNotChecked
                     : taskCheck
                 }
               />
             )}
 
-            {localStorage.getItem("role") == "admin" && task.taskStatus == 1 ? (
+            {role == "admin" && task.taskStatus == 2 ? (
+              //admin can change status 1 time
+              <ActionButton
+                label="Edit"
+                onClick={editOnclick}
+                disableButton={editLoading}
+              />
+            ) : (
+              <></>
+            )}
+
+            {role == "inspector" && task.taskStatus == 1 ? (
               //admin can change status 1 time
               <ActionButton
                 label="Edit"
@@ -305,8 +368,7 @@ export default function TaskDetailPage() {
             {task.repairReportId == 0 ? (
               //check that task has repair report
               <>
-                {localStorage.getItem("role") == "user" &&
-                task.taskStatus == 3 ? (
+                {role == "user" && task.taskStatus == 4 ? (
                   // only user can create repair
                   <ActionButton
                     label="Create Repair Report"

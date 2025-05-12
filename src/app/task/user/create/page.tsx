@@ -8,17 +8,23 @@ import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 import Link from "next/link";
 import moment from "moment";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { myapi } from "@/services/myapi";
 import { delay } from "@/libs/delay";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import DropdownIcon from "@/assets/icons/DropdownIcon";
 import { AxiosError } from "axios";
+import { cn } from "@/helpers/cn";
 
 type User = {
   username: string;
   role: string;
+  rank: string;
+  name: string;
+  surname: string;
+  userId: string;
+  createUserId: string;
 };
 
 export default function CreateUser() {
@@ -26,29 +32,36 @@ export default function CreateUser() {
   const [user, setUser] = useState<User>({
     username: "",
     role: "",
+    rank: "",
+    name: "",
+    surname: "",
+    userId: "",
+    createUserId: "",
   });
   const [createUsertLoading, setCreateUserLoading] = useState(false);
   const [errorCreateUser, setErrorCreateUser] = useState("");
-  //select status
-  const [selectStatusId, setselectStatusId] = useState({ id: 0 });
   const statusUpdate = [
     {
       id: 1,
       name: "user",
+      rank: ["จ.ต.", "จ.ท.", "จ.อ.", "พ.อ.ต.", "พ.อ.ท.", "พ.อ.อ."],
     },
     {
       id: 2,
-      name: "admin",
+      name: "inspector",
+      rank: ["พ.อ.อ."],
     },
     {
       id: 3,
+      name: "admin",
+      rank: ["จ.ต.", "จ.ท.", "จ.อ.", "พ.อ.ต.", "พ.อ.ท.", "พ.อ.อ."],
+    },
+    {
+      id: 4,
       name: "supervisor",
+      rank: ["ร.ต.", "ร.ท.", "ร.อ.", "น.ต.", "น.ท.", "น.อ."],
     },
   ];
-  const selectStatusName =
-    selectStatusId.id !== 0
-      ? statusUpdate.find((c) => c.id === selectStatusId.id)?.name
-      : "Select Status";
   //require area
   const [requireInput, setRequireInput] = useState("");
   //invalide email form
@@ -57,16 +70,64 @@ export default function CreateUser() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    CheckDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        return false;
+      } else if (localStorage.getItem("role") !== "admin") {
+        router.back();
+        return false;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function createUser() {
+    const dateCheck = await CheckDate();
+    if (dateCheck == false) {
+      return;
+    }
     //second attempt
     setRequireInput("");
     setErrorCreateUser("");
     //check require
-    if (emailCheck == false || user.username == "" || user.role == "") {
+    if (
+      emailCheck == false ||
+      user.username == "" ||
+      user.role == "" ||
+      user.rank == "" ||
+      user.name == "" ||
+      user.surname == "" ||
+      user.userId == ""
+    ) {
       setRequireInput("Require Input");
       return;
     }
     //start to post api
+    const createdUserId = localStorage.getItem("nameIdentifier");
+    if (createdUserId) user.createUserId = createdUserId;
     setCreateUserLoading(true);
     //check loading
     await delay();
@@ -112,18 +173,6 @@ export default function CreateUser() {
     }
   }
 
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  } else if (localStorage.getItem("role") !== "admin") {
-    redirect(`/login`);
-  }
-
   return (
     <div className="flex flex-col h-[85vh]">
       <HeaderDisplay label="CREATE USER">
@@ -145,72 +194,163 @@ export default function CreateUser() {
 
       <div className="overflow-auto">
         <div className="w-full">
-          <AppFormPanel label="">
+          <AppFormPanel label="DETAIL">
+            <div className="flex">
+              {/* rank */}
+              <div className="flex flex-col h-20 text-lg mr-2">
+                <label className="uppercase">RANK</label>
+                <div className="mt-4">
+                  <Menu>
+                    <MenuButton
+                      className={cn(
+                        "flex items-center h-9 w-44 self-center pl-5 pr-3 text-lg font-medium text-center rounded-lg",
+                        requireInput !== "" && user.rank == ""
+                          ? "border-red-500 border-2 animate-headShake text-red-500 stroke-red-500"
+                          : "text-gray-900 border-gray-900 border stroke-gray-900"
+                      )}
+                    >
+                      <span className="flex-1 mr-1 capitalize">
+                        {user.rank == "" ? "Select rank" : user.rank}
+                      </span>
+                      <DropdownIcon />
+                    </MenuButton>
+                    <MenuItems
+                      anchor="bottom"
+                      className={
+                        requireInput !== "" && user.rank == ""
+                          ? "w-44 mt-3 border border-red-500 rounded-lg text-lg text-red-500 text-center bg-white capitalize"
+                          : "w-44 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white capitalize"
+                      }
+                    >
+                      {statusUpdate
+                        .find((c) => c.name == user.role)
+                        ?.rank.filter((c) => c !== user.rank)
+                        .map((c) => {
+                          return (
+                            <div
+                              key={c}
+                              onClick={() => {
+                                setUser({
+                                  ...user,
+                                  rank: c,
+                                });
+                              }}
+                            >
+                              <MenuItem>
+                                <a className="block data-[focus]:bg-gray-100 py-2 capitalize">
+                                  {c}
+                                </a>
+                              </MenuItem>
+                            </div>
+                          );
+                        })}
+                    </MenuItems>
+                  </Menu>
+                </div>
+              </div>
+              {/* name */}
+              <AppTetxtInput
+                label="NAME"
+                value={user.name}
+                onTextChange={(name) => {
+                  setUser((pre) => ({ ...pre, name }));
+                }}
+                inputAlert={
+                  requireInput !== "" && user.name == "" ? true : false
+                }
+              />
+            </div>
+            {/* surname */}
             <AppTetxtInput
-              label="USERNAME"
+              label="SURNAME"
+              value={user.surname}
+              onTextChange={(surname) => {
+                setUser((pre) => ({ ...pre, surname }));
+              }}
+              inputAlert={
+                requireInput !== "" && user.surname == "" ? true : false
+              }
+            />
+            {/* username */}
+            <AppTetxtInput
+              label="USERNAME(GMAIL)"
               value={user.username}
               onTextChange={(username) => {
                 setUser((pre) => ({ ...pre, username }));
                 checkEmailFormat();
               }}
-              style={
+              inputAlert={
                 (requireInput !== "" && user.username == "") ||
                 emailCheck == false
-                  ? "border-red-500 border-2"
-                  : ""
+                  ? true
+                  : false
               }
               emailAlert={emailAlertText}
             />
-            <div className="flex flex-col h-20 text-lg">
-              <label className="uppercase">ROLE</label>
-              <div className="mt-4">
-                <Menu>
-                  <MenuButton
-                    className={
-                      requireInput !== "" && user.role == ""
-                        ? "flex items-center h-9 w-52 self-center pl-5 pr-3 text-lg font-medium text-center text-red-500 border-red-500 border-2 rounded-full stroke-red-500"
-                        : "flex items-center h-9 w-52 self-center pl-5 pr-3 text-lg font-medium text-center text-gray-900 border-gray-900 border rounded-full stroke-gray-900"
-                    }
-                  >
-                    <span className="flex-1 mr-1 capitalize">
-                      {selectStatusName}
-                    </span>
-                    <DropdownIcon />
-                  </MenuButton>
-                  <MenuItems
-                    anchor="bottom"
-                    className={
-                      requireInput !== "" && user.role == ""
-                        ? "w-52 mt-3 border border-red-500 rounded-lg text-lg text-red-500 text-center bg-white capitalize"
-                        : "w-52 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white capitalize"
-                    }
-                  >
-                    {statusUpdate.map((c) => {
-                      return (
-                        <div
-                          key={c.id}
-                          onClick={() => {
-                            setselectStatusId({ ...selectStatusId, id: c.id });
-                            setUser({
-                              ...user,
-                              role: String(c.name),
-                            });
-                            if (user.role !== c.name) {
-                              user.role = c.name;
-                            }
-                          }}
-                        >
-                          <MenuItem>
-                            <a className="block data-[focus]:bg-gray-100 py-2 capitalize">
-                              {c.name}
-                            </a>
-                          </MenuItem>
-                        </div>
-                      );
-                    })}
-                  </MenuItems>
-                </Menu>
+            <div className="flex">
+              {/* role */}
+              <div className="flex flex-col h-20 text-lg mr-2">
+                <label className="uppercase">ROLE</label>
+                <div className="mt-4">
+                  <Menu>
+                    <MenuButton
+                      className={cn(
+                        "flex items-center h-9 w-52 self-center pl-5 pr-3 text-lg font-medium text-center rounded-lg",
+                        requireInput !== "" && user.role == ""
+                          ? "border-red-500 border-2 animate-headShake text-red-500 stroke-red-500"
+                          : "text-gray-900 border-gray-900 border stroke-gray-900"
+                      )}
+                    >
+                      <span className="flex-1 mr-1 capitalize">
+                        {user.role == "" ? "Select Role" : user.role}
+                      </span>
+                      <DropdownIcon />
+                    </MenuButton>
+                    <MenuItems
+                      anchor="bottom"
+                      className={
+                        requireInput !== "" && user.role == ""
+                          ? "w-52 mt-3 border border-red-500 rounded-lg text-lg text-red-500 text-center bg-white capitalize"
+                          : "w-52 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white capitalize"
+                      }
+                    >
+                      {statusUpdate
+                        .filter((c) => c.name !== user.role)
+                        .map((c) => {
+                          return (
+                            <div
+                              key={c.id}
+                              onClick={() => {
+                                setUser({
+                                  ...user,
+                                  role: String(c.name),
+                                  rank: "",
+                                });
+                              }}
+                            >
+                              <MenuItem>
+                                <a className="block data-[focus]:bg-gray-100 py-2 capitalize">
+                                  {c.name}
+                                </a>
+                              </MenuItem>
+                            </div>
+                          );
+                        })}
+                    </MenuItems>
+                  </Menu>
+                </div>
               </div>
+              {/* userid */}
+              <AppTetxtInput
+                label="USER ID"
+                value={user.userId}
+                onTextChange={(userId) => {
+                  setUser((pre) => ({ ...pre, userId }));
+                }}
+                inputAlert={
+                  requireInput !== "" && user.userId == "" ? true : false
+                }
+              />
             </div>
           </AppFormPanel>
         </div>

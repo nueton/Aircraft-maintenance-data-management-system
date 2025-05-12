@@ -2,21 +2,19 @@ import React, { useId } from "react";
 
 type ShowDetailInputProps = {
   label: string;
-  content: string;
+  children?: React.ReactNode;
 };
 
-function ShowDetailInput({ label, content }: ShowDetailInputProps) {
+function ShowDetailInput({ label, children = <></> }: ShowDetailInputProps) {
   const id = useId();
 
   return (
-    <div className="row-span-2">
-      <div className="flex flex-col h-[12.5rem] text-lg">
-        <label htmlFor={id} className="uppercase">
-          {label}
-        </label>
-        <span id={id} className="w-full flex-1 mt-4 break-all overflow-y-auto">
-          {content}
-        </span>
+    <div className="flex flex-col h-[12.5rem] row-span-2 text-lg">
+      <label htmlFor={id} className="font-semibold">
+        {label}
+      </label>
+      <div id={id} className="w-full mt-4 flex flex-col flex-1 overflow-y-auto">
+        {children}
       </div>
     </div>
   );

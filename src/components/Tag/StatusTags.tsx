@@ -19,6 +19,12 @@ const ColorTags = [
     bgColor: "bg-stone-100",
   },
   {
+    id: "inspector",
+    text: "inspector",
+    textColor: "text-amber-600",
+    bgColor: "bg-amber-100",
+  },
+  {
     id: "user",
     text: "User",
     textColor: "text-cyan-600",

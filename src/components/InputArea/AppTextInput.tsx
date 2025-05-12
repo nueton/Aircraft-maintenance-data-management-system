@@ -20,7 +20,7 @@ function AppTextInput({
 }: AppInputProps) {
   const id = useId();
   return (
-    <div className="flex flex-col h-20 text-lg">
+    <div className="flex flex-col h-20 text-lg w-full">
       <div>
         <label htmlFor={id} className="uppercase">
           {label}

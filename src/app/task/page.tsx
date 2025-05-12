@@ -15,7 +15,6 @@ import { delay } from "../../libs/delay";
 import Link from "next/link";
 import TableErrorShow from "@/components/TableError/TableErrorShow";
 import dayjs from "dayjs";
-import { redirect } from "next/navigation";
 import moment from "moment";
 import { useRouter } from "next/navigation";
 
@@ -24,8 +23,8 @@ type Task = {
   code: string;
   createdTimeTask: Date;
   designSpecification: string;
-  inspector: string;
-  jch: string;
+  inspectorId: string;
+  jcn: string;
   originalAffiliation: string;
   problem: string;
   taskStatus: number;
@@ -33,11 +32,32 @@ type Task = {
   worker: string;
 };
 
+type Worker = {
+  id: string;
+  userId: string;
+  rank: string;
+  name: string;
+  surname: string;
+};
+
 export default function Home() {
+  //check date
+  const [check, setCheck] = useState(false);
+  const [role, setRole] = useState("");
+
+  //check path
+  const [storedValue, setStoredValue] = useState("");
+  const [pathName, setPathName] = useState("");
+
   //get Tasks from api
   const [tasks, setTasks] = useState<Task[]>([]);
   const [getTaskLoading, setGetTaskLoading] = useState(false);
   const [errorLoadTasks, setErrorLoadTasks] = useState("");
+
+  //get inspector
+  const [getInspectors, setGetInspectors] = useState<Worker[]>([]);
+  const [getInspectorLoading, setGetInspectorLoading] = useState(false);
+  const [errorInspector, setErrorInspector] = useState("");
 
   //result constant
   const [searchResult, setSearchResult] = useState<Task[]>([]);
@@ -47,7 +67,7 @@ export default function Home() {
   const categories = [
     {
       id: 1,
-      name: "JCH",
+      name: "JCN",
     },
     {
       id: 2,
@@ -68,7 +88,7 @@ export default function Home() {
 
   //Table
   const TableHeads = [
-    { id: 1, label: "JCH" },
+    { id: 1, label: "JCN" },
     { id: 2, label: "ORIGINAL AFFILIATION" },
     { id: 3, label: "INSPECTOR" },
     { id: 4, label: "DATE & TIME" },
@@ -79,8 +99,36 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    getTasks();
+    CheckDate();
+    if (typeof window !== undefined) {
+      setStoredValue(localStorage.getItem("path") || "");
+      setPathName(localStorage.getItem("pathName") || "");
+      setRole(localStorage.getItem("role") || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (check) {
+      getTasks();
+      getInspector();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
+
+  useEffect(() => {
+    const checkStorageChange = setInterval(() => {
+      const newValue = localStorage.getItem("path") || "";
+      if (newValue !== null && newValue !== storedValue) {
+        setStoredValue(newValue);
+        setPathName(String(localStorage.getItem("pathName")));
+        getTasks();
+      }
+    }, 500);
+
+    return () => clearInterval(checkStorageChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedValue]);
 
   //search with different category
   useEffect(() => {
@@ -89,7 +137,7 @@ export default function Home() {
     } else {
       if (selectCategoryId.id == 1) {
         setSearchResult(
-          tasks.filter((task) => task.jch.substring(0, 40).includes(query.data))
+          tasks.filter((task) => task.jcn.substring(0, 40).includes(query.data))
         );
       } else if (selectCategoryId.id == 2) {
         setSearchResult(
@@ -100,14 +148,47 @@ export default function Home() {
       } else if (selectCategoryId.id == 3) {
         setSearchResult(
           tasks.filter((task) =>
-            task.inspector.substring(0, 20).includes(query.data)
+            String(getInspectorFullName(task.inspectorId))
+              .substring(0, 20)
+              .includes(query.data)
           )
         );
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, tasks, selectCategoryId.id]);
 
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        return false;
+      }
+      setCheck(true);
+      return true;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function getTasks() {
+    const checkDate = await CheckDate();
+    if (checkDate == false) {
+      return;
+    }
     //user role
     if (localStorage.getItem("role") == "user") {
       setGetTaskLoading(true);
@@ -180,28 +261,53 @@ export default function Home() {
     }
   }
 
+  //get inspector
+  async function getInspector() {
+    setGetInspectorLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/Auth/allInspector`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorInspector("Error loading inspector name");
+        setGetInspectorLoading(false);
+      }
+      setGetInspectors(res.data);
+      setGetInspectorLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorInspector("Error loading inspector name");
+      setGetInspectorLoading(false);
+    }
+  }
+
+  function getInspectorFullName(Id: string) {
+    const rank = getInspectors.find((user) => user.id == Id)?.rank;
+    const name = getInspectors.find((user) => user.id == Id)?.name;
+    const surname = getInspectors.find((user) => user.id == Id)?.surname;
+    if (rank == undefined || name == undefined || surname == undefined) {
+      return;
+    } else {
+      const fullName = rank + name + " " + surname;
+      return fullName;
+    }
+  }
+
   //Button create click
   function createOnlick() {
     router.push(`/task/create`);
     setCreateLoading(true);
   }
 
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  }
-
   return (
     <div>
-      {localStorage.getItem("role") == "supervisor" ? (
+      {role == "supervisor" ? (
         <HeaderDisplay label="TASKS" />
       ) : (
-        <HeaderDisplay label={String(localStorage.getItem("pathName"))} />
+        <HeaderDisplay label={pathName} />
       )}
       <div className="flex w-full min-w-[90rem] pt-1">
         <Menu>
@@ -240,7 +346,7 @@ export default function Home() {
         <input
           className="border-y-[0.1rem] text-lg border-gray-900 py-2 pl-4 w-full focus:outline-none"
           type="search"
-          placeholder="Search Original Affiliation, JCH, inspector"
+          placeholder="Search Original Affiliation, JCN, inspector"
           onChange={(c) => {
             setQuery({ ...query, data: c.target.value });
             if (query.data !== c.target.value) {
@@ -252,7 +358,7 @@ export default function Home() {
         <div className="flex justify-center place-items-center border-[0.1rem] border-l-0 px-4 border-gray-900 rounded-e-2xl stroke-gray-900 stroke-2">
           <SearchIcon />
         </div>
-        {localStorage.getItem("role") == "user" ? (
+        {role == "user" ? (
           <ActionButton
             label="Create"
             iconRight={<AddCreateIcon />}
@@ -292,9 +398,9 @@ export default function Home() {
             </tr>
           </thead>
           <tbody className="w-full max-h-[35rem] overflow-y-scroll overflow-x-hidden">
-            {getTaskLoading ? (
+            {getTaskLoading || getInspectorLoading ? (
               <TableErrorShow label="Loading..." />
-            ) : errorLoadTasks ? (
+            ) : errorLoadTasks || errorInspector ? (
               <TableErrorShow label={errorLoadTasks} />
             ) : (
               searchResult.map((task) => {
@@ -304,9 +410,9 @@ export default function Home() {
                     className="flex text-center h-16 hover:bg-slate-100 text-base"
                   >
                     <td className="flex justify-start items-center pl-8 min-w-96 text-left">
-                      {task.jch.substring(0, 40).length == 40
-                        ? task.jch.substring(0, 40) + "..."
-                        : task.jch}
+                      {task.jcn.substring(0, 40).length == 40
+                        ? task.jcn.substring(0, 40) + "..."
+                        : task.jcn}
                     </td>
                     <td className="flex-1 flex justify-center items-center min-w-64">
                       {task.originalAffiliation.substring(0, 20).length == 20
@@ -314,9 +420,14 @@ export default function Home() {
                         : task.originalAffiliation}
                     </td>
                     <td className="flex-1 flex justify-center items-center min-w-64">
-                      {task.inspector.substring(0, 20).length == 20
-                        ? task.inspector.substring(0, 20) + "..."
-                        : task.inspector}
+                      {String(getInspectorFullName(task.inspectorId)).substring(
+                        0,
+                        20
+                      ).length == 20
+                        ? String(
+                            getInspectorFullName(task.inspectorId)
+                          ).substring(0, 20) + "..."
+                        : String(getInspectorFullName(task.inspectorId))}
                     </td>
                     <td className="flex-1 flex justify-center items-center min-w-64">
                       {dayjs(task.createdTimeTask).format(

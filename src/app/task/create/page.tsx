@@ -5,14 +5,13 @@ import AddCreateIcon from "@/assets/icons/AddCreateIcon";
 import ActionButton from "@/components/button/ActionButton";
 import AppDetailInput from "@/components/InputArea/AppDetailInput";
 import AppFormPanel from "@/components/AppFormPanel";
-import AppTextInput from "@/components/InputArea/AppTextInput";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 import moment from "moment";
 
 import { useEffect, useState } from "react";
 import { myapi } from "@/services/myapi";
 import { delay } from "@/libs/delay";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { cn } from "@/helpers/cn";
 import DropdownIcon from "@/assets/icons/DropdownIcon";
@@ -22,7 +21,7 @@ import CrossIcon from "@/assets/icons/CrossIcon";
 type Task = {
   code: string;
   designSpecification: string;
-  inspector: string;
+  inspectorId: string;
   originalAffiliation: string;
   problem: string;
   system: string;
@@ -31,6 +30,7 @@ type Task = {
 };
 
 type Worker = {
+  id: string;
   userId: string;
   rank: string;
   name: string;
@@ -38,66 +38,53 @@ type Worker = {
 };
 
 export default function TaskCreatePage() {
+  //check date
+  const [check, setCheck] = useState(false);
+
   //model task
   const [task, setTask] = useState<Task>({
     code: "",
     designSpecification: "",
-    inspector: "",
+    inspectorId: "",
     originalAffiliation: "",
     problem: "",
     system: "",
     worker: "",
     createdUserId: " ",
   });
-  //create task loading
   const [createTaskLoading, setCreateTaskLoading] = useState(false);
-  //create task error
   const [errorCreateTask, setErrorCreateTask] = useState("");
 
   //get origianl affiliation
   const [getAffiliations, setGetAffiliations] = useState<
     { id: number; affiliationName: string }[]
   >([]);
-  //affiliation loading
   const [getAffiliationLoading, setGetAffiliationLoading] = useState(false);
-  //affiliation error
   const [errorAffiliation, setErrorAffiliation] = useState("");
-  //select affiliation name
-  const selectAffiliationName =
-    task.originalAffiliation !== ""
-      ? task.originalAffiliation
-      : "Select Affiliation";
 
   //get model
   const [getModels, setGetModels] = useState<
-    { id: number; modelName: string }[]
+    { id: number; modelName: string; model: string[] }[]
   >([]);
-  //model loading
   const [getModelLoading, setGetModelLoading] = useState(false);
-  //model error
   const [errorModel, setErrorModel] = useState("");
-  //selec model name
-  const selectModelName =
-    task.designSpecification !== "" ? task.designSpecification : "Select Model";
 
   //get inspector
   const [getInspectors, setGetInspectors] = useState<Worker[]>([]);
-  //inspector loading
   const [getInspectorLoading, setGetInspectorLoading] = useState(false);
-  //error get inspector
   const [errorInspector, setErrorInspector] = useState("");
   //select inspector name
   const selectInspectorName =
-    task.inspector !== "" ? task.inspector : "Select Inspector";
+    task.inspectorId !== ""
+      ? getInspectorFullName(task.inspectorId)
+      : "เลือกผู้ตรวจสอบ";
   //search inspector
   const [searchInspector, setSearchInspector] = useState<Worker[]>([]);
   const [queryInspector, setQueryInspector] = useState({ data: "" });
 
   //get worker
   const [getWorkers, setGetWorkers] = useState<Worker[]>([]);
-  //worker loading
   const [getWorkerLoading, setGetWorkerLoading] = useState(false);
-  //error get worker
   const [errorWorker, setErrorWorker] = useState("");
   //select worker id
   const [selectWorkerId, setSelectWorkerId] = useState<string[]>([]);
@@ -109,9 +96,7 @@ export default function TaskCreatePage() {
   const [getSystems, setGetSystems] = useState<
     { id: number; systemName: string }[]
   >([]);
-  //system loading
   const [getSystemLoading, setGetSystemLoading] = useState(false);
-  //error get system
   const [errorSystem, setErrorSystem] = useState("");
   //select system name
   const [selectSystemName, setSelectSystemName] = useState<
@@ -119,23 +104,38 @@ export default function TaskCreatePage() {
   >([]);
   // select system id
   const [selectSystemId, setSelectSystemId] = useState<number[]>([]);
-
-  //requir area
+  //serch system
+  const [searchSystem, setSearchSystem] = useState<
+    { id: number; systemName: string }[]
+  >([]);
+  const [querySystem, setQuerySystem] = useState({ data: "" });
+  //additional area
+  const [additionalCheck, setAdditionalCheck] = useState(false);
+  //require area
   const [requireInput, setRequireInput] = useState("");
+  //require problem
+  const [requireProblem, setRequireProblem] = useState("");
 
   const router = useRouter();
 
   useEffect(() => {
-    getInspector();
-    getWorker();
-    getAffiliation();
-    getModel();
-    getSystem();
+    CheckDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (check) {
+      getInspector();
+      getWorker();
+      getAffiliation();
+      getModel();
+      getSystem();
+    }
+  }, [check]);
 
   //search inspector
   useEffect(() => {
-    if (queryInspector.data == "" && task.inspector == "Select Inspector") {
+    if (queryInspector.data == "" && task.inspectorId == "Select Inspector") {
     } else {
       setSearchInspector(
         getInspectors.filter((inspector) =>
@@ -145,7 +145,7 @@ export default function TaskCreatePage() {
         )
       );
     }
-  }, [queryInspector, getInspectors, task.inspector]);
+  }, [queryInspector, getInspectors, task.inspectorId]);
 
   //serach worker
   useEffect(() => {
@@ -161,6 +161,49 @@ export default function TaskCreatePage() {
       );
     }
   }, [queryWorker, getWorkers]);
+
+  //search system
+  useEffect(() => {
+    if (querySystem.data == "") {
+      setSearchSystem(getSystems);
+    } else {
+      setSearchSystem(
+        getSystems.filter((system) =>
+          system.systemName.includes(querySystem.data)
+        )
+      );
+    }
+  }, [querySystem, getSystems]);
+
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        return false;
+      }
+      if (localStorage.getItem("role") !== "user") {
+        router.back();
+        return false;
+      }
+      setCheck(true);
+      return true;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   //get affiliation
   async function getAffiliation() {
@@ -199,7 +242,20 @@ export default function TaskCreatePage() {
         setErrorModel("Error loading Model");
         setGetModelLoading(false);
       }
-      setGetModels(res.data);
+      const allModel = [];
+      for (let i = 0; i < res.data.length; i++) {
+        const modelNumbers = res.data[i].modelNumber.split(",");
+        const result = [];
+        for (let a = 0; a < modelNumbers.length; a++) {
+          result.push(modelNumbers[a]);
+        }
+        allModel.push({
+          id: res.data[i].id,
+          modelName: res.data[i].modelName,
+          model: result,
+        });
+      }
+      setGetModels(allModel);
       setGetModelLoading(false);
     } catch (error) {
       console.error(error);
@@ -277,6 +333,18 @@ export default function TaskCreatePage() {
     }
   }
 
+  function getInspectorFullName(Id: string) {
+    const rank = getInspectors.find((user) => user.id == Id)?.rank;
+    const name = getInspectors.find((user) => user.id == Id)?.name;
+    const surname = getInspectors.find((user) => user.id == Id)?.surname;
+    if (rank == undefined || name == undefined || surname == undefined) {
+      return;
+    } else {
+      const fullName = rank + name + " " + surname;
+      return fullName;
+    }
+  }
+
   function getWorkerFullName(userId: string) {
     const rank = getWorkers.find((user) => user.userId == userId)?.rank;
     const name = getWorkers.find((user) => user.userId == userId)?.name;
@@ -290,63 +358,73 @@ export default function TaskCreatePage() {
   }
 
   async function createTask() {
-    // task.worker = selectWorkerId.toString();
-    // task.system = selectSystemName
-    //   .map((system) => system.name + ":" + system.repair)
-    //   .toString();
-    // //when second attempt
-    // setRequireInput("");
-    // setErrorCreateTask("");
-    // //check require area
-    // if (
-    //   task.originalAffiliation == "" ||
-    //   task.designSpecification == "" ||
-    //   task.worker == "" ||
-    //   task.inspector == ""
-    // ) {
-    //   setRequireInput("Require Input");
-    //   return;
-    // }
-    // //input created user
-    // const createdUserId = localStorage.getItem("nameIdentifier");
-    // if (createdUserId) task.createdUserId = createdUserId;
-    // //start to post api
-    // setCreateTaskLoading(true);
-    // //check loading
-    // await delay();
-    // try {
-    //   //post api
-    //   const res = await myapi.post("/Task", task, {
-    //     headers: {
-    //       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-    //     },
-    //   });
-    //   if (res.status !== 200) {
-    //     setErrorCreateTask(
-    //       "We can't process your request. Please submit again."
-    //     );
-    //     setCreateTaskLoading(false);
-    //     return;
-    //   }
-    //   setCreateTaskLoading(false);
-    //   router.push(`/task/${res.data.id}`);
-    // } catch (error) {
-    //   console.error(error);
-    //   setErrorCreateTask("We can't process your request. Please submit again.");
-    //   setCreateTaskLoading(false);
-    // }
-  }
-
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  } else if (localStorage.getItem("role") !== "user") {
-    redirect(`/login`);
+    const dateCheck = await CheckDate();
+    if (dateCheck == false) {
+      return;
+    }
+    if (additionalCheck == true) {
+      task.system = selectSystemName
+        .map((system) => system.name + ":" + system.repair)
+        .toString();
+    } else if (additionalCheck == false) {
+      task.problem = "";
+    }
+    task.worker = selectWorkerId.map((c) => getWorkerFullName(c)).toString();
+    //when second attempt
+    setRequireInput("");
+    setRequireProblem("");
+    setErrorCreateTask("");
+    //check require area
+    if (
+      task.originalAffiliation == "" ||
+      task.designSpecification == "" ||
+      task.worker == "" ||
+      task.inspectorId == "" ||
+      task.code == ""
+    ) {
+      setRequireInput("Require Input");
+      if (
+        additionalCheck == true &&
+        (task.system == "" || task.problem == "")
+      ) {
+        setRequireProblem("Require Explanation");
+      }
+      return;
+    } else if (
+      additionalCheck == true &&
+      (task.system == "" || task.problem == "")
+    ) {
+      setRequireProblem("Require Explanation");
+      return;
+    }
+    //input created user
+    const createdUserId = localStorage.getItem("nameIdentifier");
+    if (createdUserId) task.createdUserId = createdUserId;
+    //start to post api
+    setCreateTaskLoading(true);
+    //check loading
+    await delay();
+    try {
+      //post api
+      const res = await myapi.post("/Task", task, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorCreateTask(
+          "We can't process your request. Please submit again."
+        );
+        setCreateTaskLoading(false);
+        return;
+      }
+      setCreateTaskLoading(false);
+      router.push(`/task/${res.data.id}`);
+    } catch (error) {
+      console.error(error);
+      setErrorCreateTask("We can't process your request. Please submit again.");
+      setCreateTaskLoading(false);
+    }
   }
 
   return (
@@ -363,8 +441,9 @@ export default function TaskCreatePage() {
         {requireInput !== "" &&
         (task.originalAffiliation == "" ||
           task.designSpecification == "" ||
-          task.worker == "" ||
-          task.inspector == "") ? (
+          selectWorkerId.length == 0 ||
+          task.inspectorId == "" ||
+          task.code == "") ? (
           <span className="mt-4 font-semibold text-red-500">
             {requireInput}
           </span>
@@ -373,12 +452,12 @@ export default function TaskCreatePage() {
         )}
       </HeaderDisplay>
 
-      <div className="overflow-auto">
+      <div className="overflow-auto overflow-y-scroll">
         <div className="w-full">
           <AppFormPanel label="DETAIL">
             {/* affiliation */}
             <div className="flex flex-col h-20 text-lg">
-              <label className="uppercase">affiliation</label>
+              <label className="font-semibold">กองบิน</label>
               <Menu>
                 <MenuButton
                   className={cn(
@@ -393,7 +472,9 @@ export default function TaskCreatePage() {
                       ? "Loading..."
                       : errorAffiliation
                       ? errorAffiliation
-                      : selectAffiliationName}
+                      : task.originalAffiliation !== ""
+                      ? task.originalAffiliation
+                      : "เลือกกองบิน"}
                   </div>
                   <DropdownIcon style="ml-1" />
                 </MenuButton>
@@ -444,77 +525,156 @@ export default function TaskCreatePage() {
                 )}
               </Menu>
             </div>
-            {/* design specification */}
-            <div className="flex flex-col h-20 text-lg">
-              <label className="uppercase">design specification</label>
-              <Menu>
-                <MenuButton
-                  className={cn(
-                    "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
-                    requireInput !== "" && task.designSpecification == ""
-                      ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
-                      : "border border-gray-900"
-                  )}
-                >
-                  <div className="text-nowrap w-full truncate">
-                    {getModelLoading
-                      ? "Loading..."
-                      : errorModel
-                      ? errorModel
-                      : selectModelName}
-                  </div>
-                  <DropdownIcon style="ml-1" />
-                </MenuButton>
-                {getModelLoading || errorModel ? (
-                  <MenuItems
-                    anchor="bottom"
-                    className="w-[46rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+            <div className="grid grid-cols-2 gap-5">
+              {/* design specification */}
+              <div className="flex flex-col h-20 text-lg">
+                <label className="font-semibold">รุ่นเครื่องบิน</label>
+                <Menu>
+                  <MenuButton
+                    className={cn(
+                      "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                      requireInput !== "" && task.designSpecification == ""
+                        ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                        : "border border-gray-900"
+                    )}
                   >
-                    {getModelLoading ? "Loading" : errorModel ? errorModel : ""}
-                  </MenuItems>
-                ) : (
-                  <MenuItems
-                    anchor="bottom"
-                    className="w-[46rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
-                  >
-                    <div className="max-h-40 overflow-y-scroll">
-                      {getModels
-                        .filter(
-                          (model) =>
-                            model.modelName !== task.designSpecification
-                        )
-                        .map((c) => {
-                          return (
-                            <div
-                              key={c.id}
-                              onClick={() => {
-                                setTask({
-                                  ...task,
-                                  designSpecification: c.modelName,
-                                });
-                              }}
-                            >
-                              <MenuItem>
-                                <a className="block data-[focus]:bg-gray-100 py-2">
-                                  {c.modelName}
-                                </a>
-                              </MenuItem>
-                            </div>
-                          );
-                        })}
+                    <div className="text-nowrap w-full truncate">
+                      {getModelLoading
+                        ? "Loading..."
+                        : errorModel
+                        ? errorModel
+                        : task.designSpecification !== ""
+                        ? task.designSpecification
+                        : "เลือกรุ่นเครื่องบิน"}
                     </div>
-                  </MenuItems>
-                )}
-              </Menu>
+                    <DropdownIcon style="ml-1" />
+                  </MenuButton>
+                  {getModelLoading || errorModel ? (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[22rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      {getModelLoading
+                        ? "Loading"
+                        : errorModel
+                        ? errorModel
+                        : ""}
+                    </MenuItems>
+                  ) : (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[22rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      <div className="max-h-40 overflow-y-scroll">
+                        {getModels
+                          .filter(
+                            (model) =>
+                              model.modelName !== task.designSpecification
+                          )
+                          .map((c) => {
+                            return (
+                              <div
+                                key={c.id}
+                                onClick={() => {
+                                  setTask({
+                                    ...task,
+                                    designSpecification: c.modelName,
+                                    code: "",
+                                  });
+                                }}
+                              >
+                                <MenuItem>
+                                  <a className="block data-[focus]:bg-gray-100 py-2">
+                                    {c.modelName}
+                                  </a>
+                                </MenuItem>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </MenuItems>
+                  )}
+                </Menu>
+              </div>
+              {/* model number */}
+              <div className="flex flex-col h-20 text-lg">
+                <label className="font-semibold">หมายเลขเครื่องบิน</label>
+                <Menu>
+                  <MenuButton
+                    className={cn(
+                      "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                      requireInput !== "" && task.code == ""
+                        ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                        : "border border-gray-900"
+                    )}
+                  >
+                    <div className="text-nowrap w-full truncate">
+                      {getModelLoading
+                        ? "Loading..."
+                        : errorModel
+                        ? errorModel
+                        : task.code !== ""
+                        ? task.code
+                        : "เลือกหมายเลขเครื่องบิน"}
+                    </div>
+                    <DropdownIcon style="ml-1" />
+                  </MenuButton>
+                  {getModelLoading || errorModel ? (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[22rem] h-9 mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      {getModelLoading
+                        ? "Loading"
+                        : errorModel
+                        ? errorModel
+                        : ""}
+                    </MenuItems>
+                  ) : task.designSpecification !== "" ? (
+                    <MenuItems
+                      anchor="bottom"
+                      className="w-[22rem] mt-2 border rounded-lg text-lg text-center bg-white border-gray-300"
+                    >
+                      <div className="max-h-40 overflow-y-scroll">
+                        {getModels
+                          .find((c) => c.modelName == task.designSpecification)
+                          ?.model.filter((c) => c !== task.code)
+                          .map((c) => {
+                            return (
+                              <div
+                                key={c}
+                                onClick={() => {
+                                  setTask({
+                                    ...task,
+                                    code: c,
+                                  });
+                                }}
+                              >
+                                <MenuItem>
+                                  <a className="block data-[focus]:bg-gray-100 py-2">
+                                    {c}
+                                  </a>
+                                </MenuItem>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </MenuItems>
+                  ) : (
+                    <></>
+                  )}
+                </Menu>
+              </div>
             </div>
+
             {/* inspector */}
             <div className="flex flex-col h-20 text-lg">
-              <label className="uppercase">inspector</label>
+              <label className="font-semibold">ผู้ตรวจสอบ</label>
               <Menu>
                 <MenuButton
                   className={cn(
                     "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
-                    requireInput !== "" && task.inspector == ""
+                    requireInput !== "" && task.inspectorId == ""
                       ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
                       : "border border-gray-900"
                   )}
@@ -568,21 +728,16 @@ export default function TaskCreatePage() {
                     <div className="max-h-40 overflow-y-scroll">
                       {searchInspector
                         .filter(
-                          (inspector) =>
-                            inspector.rank +
-                              inspector.name +
-                              " " +
-                              inspector.surname !==
-                            task.inspector
+                          (inspector) => inspector.id !== task.inspectorId
                         )
                         .map((c) => {
                           return (
                             <div
-                              key={c.userId}
+                              key={c.id}
                               onClick={() => {
                                 setTask({
                                   ...task,
-                                  inspector: c.rank + c.name + " " + c.surname,
+                                  inspectorId: c.id,
                                 });
                                 setQueryInspector({
                                   ...queryInspector,
@@ -606,12 +761,12 @@ export default function TaskCreatePage() {
             {/* worker */}
             <div className="row-span-2">
               <div className="flex flex-col h-20 text-lg">
-                <label>WORKER</label>
+                <label className="font-semibold">ผู้ปฏิบัติงาน</label>
                 <Menu>
                   <MenuButton
                     className={cn(
                       "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
-                      requireInput !== "" && task.worker == ""
+                      requireInput !== "" && selectWorkerId.length == 0
                         ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
                         : "border border-gray-900"
                     )}
@@ -627,7 +782,7 @@ export default function TaskCreatePage() {
                         ? "Loading..."
                         : errorWorker
                         ? errorWorker
-                        : "Select worker name"}
+                        : "เลือกผู้ปฏิบัติงาน"}
                     </div>
                     <DropdownIcon style="ml-1" />
                   </MenuButton>
@@ -728,19 +883,44 @@ export default function TaskCreatePage() {
         </div>
 
         <div className="w-full mt-14">
-          <AppFormPanel label="ADDITIONAL">
+          <input
+            className="w-4 h-4 mr-2"
+            type="checkbox"
+            onClick={(c) => {
+              setAdditionalCheck(c.currentTarget.checked);
+            }}
+          />
+          <AppFormPanel
+            label="ADDITIONAL"
+            style={additionalCheck == true ? "" : "hidden"}
+          >
             {/* system */}
             <div className="row-span-2">
               <div className="flex flex-col h-20 text-lg">
-                <label>SYSTEM</label>
+                <label className="font-semibold">ระบบปฏิบัติการ</label>
                 <Menu>
-                  <MenuButton className="inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2 border border-gray-900">
+                  <MenuButton
+                    className={cn(
+                      "inline-flex items-center h-full pr-3 text-lg text-center mt-4 text-gray-900 rounded-lg stroke-gray-900 hover:border-2",
+                      requireProblem !== "" &&
+                        selectSystemId.length == 0 &&
+                        additionalCheck == true
+                        ? "border-red-500 border-2 text-red-500 font-semibold animate-headShake"
+                        : "border border-gray-900"
+                    )}
+                    onClick={() => {
+                      setQuerySystem({
+                        ...querySystem,
+                        data: "",
+                      });
+                    }}
+                  >
                     <div className="text-nowrap w-full truncate">
                       {getSystemLoading
                         ? "Loading..."
                         : errorSystem
                         ? errorSystem
-                        : "Select system"}
+                        : "เลือกระบบปฏิบัติการ"}
                     </div>
                     <DropdownIcon style="ml-1" />
                   </MenuButton>
@@ -764,22 +944,19 @@ export default function TaskCreatePage() {
                         <input
                           placeholder="search"
                           className="w-full border border-r-0 my-2 ml-2 border-gray-900 rounded-s-lg hover:outline-none focus:outline-none pl-2"
-                          // onChange={(c) => {
-                          //   setQueryWorker({
-                          //     ...queryWorker,
-                          //     data: c.target.value,
-                          //   });
-                          //   if (queryWorker.data !== c.target.value) {
-                          //     queryWorker.data = c.target.value;
-                          //   }
-                          // }}
+                          onChange={(c) => {
+                            setQuerySystem({
+                              ...querySystem,
+                              data: c.target.value,
+                            });
+                          }}
                         />
                         <div className="flex justify-center place-items-center border border-l-0 px-4 my-2 mr-2 border-gray-900 rounded-e-lg stroke-gray-900 stroke-2">
                           <SearchIcon />
                         </div>
                       </div>
                       <div className="max-h-40 overflow-y-scroll">
-                        {getSystems
+                        {searchSystem
                           .filter(
                             (system) => !selectSystemId.includes(system.id)
                           )
@@ -805,50 +982,12 @@ export default function TaskCreatePage() {
                                       },
                                     ]);
 
-                                    // if (
-                                    //   selectSystemId.length == 0 ||
-                                    //   selectSystemId[
-                                    //     selectSystemId.length - 1
-                                    //   ] !== system.id
-                                    // ) {
-                                    //   selectSystemId.push(system.id);
-                                    //   selectSystemName.push({
-                                    //     name: system.systemName,
-                                    //     repair: false,
-                                    //   });
-                                    //   console.log(selectSystemId);
-                                    // }
-
-                                    // console.log(selectSystemName);
-
-                                    // setSelectSystemId(() => [
-                                    //   ...selectSystemId,
-                                    //   system.id,
-                                    // ]);
-                                    // console.log(
-                                    //   selectSystemId[selectSystemId.length] !==
-                                    //     system.id
-                                    // );
-                                    // if (
-                                    //   selectSystemId[selectSystemId.length] !==
-                                    //     system.id ||
-                                    //   selectSystemId.length == 0
-                                    // ) {
-                                    //   selectSystemId.push(system.id);
-                                    //   selectSystemName.push({
-                                    //     name: system.systemName,
-                                    //     repair: false,
-                                    //   });
-                                    //   console.log("in condition");
-                                    // }
+                                    setQuerySystem({
+                                      ...querySystem,
+                                      data: "",
+                                    });
                                   }
                                 }}
-                                //   setQueryWorker({
-                                //     ...queryWorker,
-                                //     data: "",
-                                //   });
-                                //   task.worker = selectWorkerId.toString();
-                                // }}
                               >
                                 <MenuItem>
                                   <a className="block data-[focus]:bg-gray-100 py-2">
@@ -870,7 +1009,7 @@ export default function TaskCreatePage() {
                       key={system.name}
                       className="flex items-center mb-3 py-[0.2rem] pl-2"
                     >
-                      <label className="w-52">{system.name}</label>
+                      <label className="w-60">{system.name}</label>
                       <div className="flex flex-1 justify-end items-center">
                         <label className="mr-2">
                           This system need to replace part
@@ -911,16 +1050,18 @@ export default function TaskCreatePage() {
               </div>
             </div>
             <AppDetailInput
-              label="PROBLEM"
+              label="ปัญหา"
               value={task.problem}
               onTextChange={(problem) =>
                 setTask((pre) => ({ ...pre, problem }))
               }
-            />
-            <AppTextInput
-              label="CODE"
-              value={task.code}
-              onTextChange={(code) => setTask((pre) => ({ ...pre, code }))}
+              inputAlert={
+                task.problem == "" &&
+                requireProblem !== "" &&
+                additionalCheck == true
+                  ? true
+                  : false
+              }
             />
           </AppFormPanel>
         </div>

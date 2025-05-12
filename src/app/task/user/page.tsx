@@ -7,26 +7,36 @@ import ActionButton from "@/components/button/ActionButton";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 import StatusTags from "@/components/Tag/StatusTags";
 import TableUserErrorShow from "@/components/TableError/TableUserErrorShow";
+import Link from "next/link";
+import FileIcon from "@/assets/icons/FileIcon";
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@/helpers/cn";
 import { AxiosError } from "axios";
 import { myapi } from "@/services/myapi";
 import { delay } from "../../../libs/delay";
-import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 type User = {
+  id: string;
   username: string;
+  userId: string;
   role: string;
   passwordHash: string;
+  resetPassword: string;
+  resetPasswordExpiryTime: Date;
 };
 
 type ResetPassword = {
-  request: string;
+  id: string;
+  resetPasswordId: string;
 };
 
 export default function UserHome() {
+  //check date
+  const [check, setCheck] = useState(false);
+
   //get users from api
   const [users, setUser] = useState<User[]>([]);
   const [getUserkLoading, setGetUserLoading] = useState(false);
@@ -38,7 +48,8 @@ export default function UserHome() {
 
   //reset password
   const [resetPassword, setResetPassword] = useState<ResetPassword>({
-    request: "",
+    id: "",
+    resetPasswordId: "",
   });
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [errorResetPassword, setErrorResetPassword] = useState("");
@@ -52,13 +63,23 @@ export default function UserHome() {
     { id: 2, label: "STATUS" },
     { id: 3, label: "PASSWORD" },
     { id: 4, label: "RESET PASSWORD" },
+    { id: 5, label: "RESET" },
+    { id: 6, label: "" },
   ];
 
   const router = useRouter();
 
   useEffect(() => {
-    getUsers();
+    CheckDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (check) {
+      getUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
 
   useEffect(() => {
     if (query.data == "") {
@@ -70,7 +91,43 @@ export default function UserHome() {
     }
   }, [query, users]);
 
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        setCheck(false);
+        return false;
+      } else if (localStorage.getItem("role") !== "admin") {
+        router.push("/task");
+        setCheck(false);
+        return false;
+      } else {
+        setCheck(true);
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function getUsers() {
+    const checkDate = await CheckDate();
+    if (checkDate == false) {
+      return;
+    }
     setGetUserLoading(true);
     await delay();
     try {
@@ -98,7 +155,7 @@ export default function UserHome() {
     //second attempt
     setErrorResetPassword("");
     //set error message
-    if (resetPassword.request == localStorage.getItem("name")) {
+    if (resetPassword.id == localStorage.getItem("nameIdentifier")) {
       setErrorResetPassword(
         "You can't reset password account that currently use"
       );
@@ -113,18 +170,14 @@ export default function UserHome() {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        params: {
-          request: resetPassword.request,
-        },
       });
       if (res.status !== 200) {
-        console.log("can't reset");
         setErrorResetPassword("Error reset password");
         setResetPasswordLoading(false);
         return;
       }
       setResetPasswordLoading(false);
-      location.reload();
+      getUsers();
     } catch (err) {
       const error = err as AxiosError;
       setErrorResetPassword(String(error.response?.data));
@@ -136,18 +189,6 @@ export default function UserHome() {
   function createOnlick() {
     router.push(`/task/user/create`);
     setCreateLoading(true);
-  }
-
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  } else if (localStorage.getItem("role") !== "admin") {
-    redirect(`/login`);
   }
 
   return (
@@ -192,7 +233,11 @@ export default function UserHome() {
             <tr className="flex h-16">
               {TableHeads.map((c) => {
                 const styleHeader =
-                  c.id === 1 || c.id === 4 ? "min-w-96 flex-none" : "";
+                  c.id === 1
+                    ? "min-w-80 flex-none"
+                    : c.id == 6
+                    ? "min-w-[5.75rem] flex-none"
+                    : "";
                 return (
                   <th
                     key={c.id}
@@ -202,7 +247,7 @@ export default function UserHome() {
                     )}
                   >
                     <button className="flex m-auto">
-                      <span className="pr-3">{c.label}</span>
+                      <span className="">{c.label}</span>
                     </button>
                   </th>
                 );
@@ -218,10 +263,10 @@ export default function UserHome() {
               searchResult.map((user) => {
                 return (
                   <tr
-                    key={user.username}
+                    key={user.id}
                     className="flex text-center h-16 hover:bg-slate-100 text-base"
                   >
-                    <td className="flex justify-start items-center pl-8 min-w-96 text-left">
+                    <td className="flex justify-start items-center pl-8 min-w-80 text-left">
                       {user.username}
                     </td>
                     <td className="flex-1 flex justify-center items-center min-w-64 capitalize">
@@ -235,32 +280,52 @@ export default function UserHome() {
                       )}
                     </td>
                     <td className="flex-1 flex justify-center items-center min-w-64">
+                      {user.passwordHash !== "" ? (
+                        "-"
+                      ) : dayjs(Date.now()) <
+                        dayjs(user.resetPasswordExpiryTime) ? (
+                        user.resetPassword
+                      ) : (
+                        <span className="font-semibold">
+                          Please Reset Password
+                        </span>
+                      )}
+                    </td>
+                    <td className="flex-1 flex justify-center items-center min-w-64">
                       <ActionButton
                         label="Reset Password"
                         style={
-                          errorResetPassword &&
-                          user.username == resetPassword.request
+                          errorResetPassword && user.id == resetPassword.id
                             ? "border-red-500 border-2 py-1 px-4 rounded-full"
                             : "py-1 px-4 rounded-full"
                         }
                         styleTextSize={
-                          errorResetPassword &&
-                          user.username == resetPassword.request
+                          errorResetPassword && user.id == resetPassword.id
                             ? "text-red-500 font-semibold text-base"
                             : "text-base"
                         }
                         disableButton={resetPasswordLoading}
                         onClick={() => {
                           setResetPassword({
-                            ...resetPassword,
-                            request: user.username,
+                            id: user.id,
+                            resetPasswordId: String(
+                              localStorage.getItem("nameIdentifier")
+                            ),
                           });
-                          if (resetPassword.request !== user.username) {
-                            resetPassword.request = user.username;
+                          if (resetPassword.id !== user.id) {
+                            resetPassword.id = user.id;
+                            resetPassword.resetPasswordId = String(
+                              localStorage.getItem("nameIdentifier")
+                            );
                           }
                           resetPasswordFunction();
                         }}
                       />
+                    </td>
+                    <td className="flex justify-center items-center h-16 min-w-20 cursor-pointer">
+                      <Link href={`/task/user/${user.userId}`}>
+                        <FileIcon />
+                      </Link>
                     </td>
                   </tr>
                 );

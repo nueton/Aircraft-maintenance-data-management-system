@@ -2,8 +2,7 @@
 
 import AddCreateIcon from "@/assets/icons/AddCreateIcon";
 import ActionButton from "@/components/button/ActionButton";
-import AppFormPanel from "@/components/AppFormPanel";
-import AppTetxtInput from "@/components/InputArea/AppTextInput";
+import AppTextInput from "@/components/InputArea/AppTextInput";
 import HeaderDisplay from "@/components/TextDisplay/HeaderDisplay";
 import Link from "next/link";
 import moment from "moment";
@@ -13,103 +12,104 @@ import { myapi } from "@/services/myapi";
 import { delay } from "@/libs/delay";
 import { redirect, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import AppRepairPanel from "@/components/AppRepairPanel";
 
-type RepairReport = {
+type EachSystem = {
+  name: string;
   decommissionedSerial: string;
   decommissionedParcel: string;
+  decommissionedNationalSerialNumber: string;
   commissionedSerial: string;
   commissionedParcel: string;
-  taskReportId: number;
+  commissionedNationalSerialNumber: string;
 };
 
 type Task = {
   id: number;
+  system: string;
   repairReportId: number;
 };
 
 export default function RepairReportCreate() {
+  //check date
+  const [check, setCheck] = useState(false);
+
   //get task
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState<Task>({
     id: 0,
+    system: "",
     repairReportId: 0,
   });
   const [getTaskLoading, setGetTaskLoading] = useState(false);
   const [errorLoadTask, setErrorLoadTask] = useState("");
   //post repair report
-  const [repairReport, setRepairReport] = useState<RepairReport>({
+  const repairReport = {
     decommissionedSerial: "",
     decommissionedParcel: "",
+    decommissionedNationalSerialNumber: "",
     commissionedSerial: "",
     commissionedParcel: "",
+    commissionedNationalSerialNumber: "",
     taskReportId: Number(taskId),
-  });
+  };
   const [createRepairReportLoading, setCreateRepairReportLoading] =
     useState(false);
   const [errorCreateRepairReport, setErrorCreateRepairReport] = useState("");
+
+  //get model
+  const [modelDetail, setModelDetail] = useState<EachSystem[]>([]);
+  //model loading
+  const [getModelLoading, setGetModelLoading] = useState(false);
+  //model error
+  const [errorModel, setErrorModel] = useState("");
+
   //require area
   const [requireInput, setRequireInput] = useState("");
 
   const router = useRouter();
 
+  useEffect(() => {
+    CheckDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   //get task and input repair id after created
   useEffect(() => {
-    if (taskId) {
+    if (check && taskId) {
       getTask(Number(taskId));
+      getModel(Number(taskId));
     }
-  }, [taskId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
 
-  async function createRepairReport() {
-    if (task.repairReportId !== 0) {
-      router.push(`/task/${task.id}/repair-report/${task.repairReportId}`);
-      return;
-    }
-    //When second attempt
-    setRequireInput("");
-    setErrorCreateRepairReport("");
-    //check require area
-    if (
-      repairReport.decommissionedParcel == "" ||
-      repairReport.commissionedParcel == "" ||
-      repairReport.decommissionedSerial == "" ||
-      repairReport.commissionedSerial == ""
-    ) {
-      setRequireInput("Require Input");
-      return;
-    }
-    //start to post api
-    setCreateRepairReportLoading(true);
-    //check loading
-    await delay();
+  async function CheckDate() {
     try {
-      const res = await myapi.post("/RepairReport", repairReport, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (res.status !== 200) {
-        setErrorCreateRepairReport(
-          "We can't process your request. Please submit again."
-        );
-        setCreateRepairReportLoading(false);
-        return;
-      }
-      //get repair id after created and set
-      setTask((task.repairReportId = res.data.id));
-      //put and send
-      await myapi.put(`/task/${task.id}`, task, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      setCreateRepairReportLoading(false);
-      router.push(`/task/${task.id}/repair-report/${res.data.id}`);
-    } catch (error) {
-      console.error(error);
-      setErrorCreateRepairReport(
-        "We can't process your request. Please submit again."
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
       );
-      setCreateRepairReportLoading(false);
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        return false;
+      }
+      if (localStorage.getItem("role") !== "user") {
+        router.back();
+        return false;
+      }
+      setCheck(true);
+      return true;
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -137,28 +137,133 @@ export default function RepairReportCreate() {
     }
   }
 
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  } else if (localStorage.getItem("role") !== "user") {
-    redirect(`/login`);
-  } else if (task.repairReportId !== 0) {
+  //get model
+  async function getModel(id: number) {
+    setGetModelLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/Task/system/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorModel("Error loading Model");
+        setGetModelLoading(false);
+      }
+      setModelDetail(res.data);
+      setGetModelLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorModel("Error loading Model");
+      setGetModelLoading(false);
+    }
+  }
+
+  function checkInput() {
+    let check = false;
+    modelDetail.map((c) => {
+      if (
+        c.decommissionedSerial == null ||
+        c.decommissionedParcel == null ||
+        c.decommissionedNationalSerialNumber == null ||
+        c.commissionedSerial == null ||
+        c.commissionedParcel == null ||
+        c.commissionedNationalSerialNumber == null ||
+        c.decommissionedSerial == "" ||
+        c.decommissionedParcel == "" ||
+        c.decommissionedNationalSerialNumber == "" ||
+        c.commissionedSerial == "" ||
+        c.commissionedParcel == "" ||
+        c.commissionedNationalSerialNumber == ""
+      ) {
+        setRequireInput("Require Input");
+        check = true;
+      }
+    });
+    return check;
+  }
+
+  function insertInput() {
+    repairReport.decommissionedSerial = modelDetail
+      .map((c) => c.name + ":" + c.decommissionedSerial)
+      .toString();
+    repairReport.decommissionedParcel = modelDetail
+      .map((c) => c.name + ":" + c.decommissionedParcel)
+      .toString();
+    repairReport.decommissionedNationalSerialNumber = modelDetail
+      .map((c) => c.name + ":" + c.decommissionedNationalSerialNumber)
+      .toString();
+    repairReport.commissionedSerial = modelDetail
+      .map((c) => c.name + ":" + c.commissionedSerial)
+      .toString();
+    repairReport.commissionedParcel = modelDetail
+      .map((c) => c.name + ":" + c.commissionedParcel)
+      .toString();
+    repairReport.commissionedNationalSerialNumber = modelDetail
+      .map((c) => c.name + ":" + c.commissionedNationalSerialNumber)
+      .toString();
+    repairReport.taskReportId = Number(taskId);
+  }
+
+  async function createRepairReport() {
+    const dateCheck = await CheckDate();
+    if (dateCheck == false) {
+      return;
+    }
+    if (task.repairReportId !== 0) {
+      router.push(`/task/${task.id}/repair-report/${task.repairReportId}`);
+      return;
+    }
+    //When second attempt
+    setRequireInput("");
+    setErrorCreateRepairReport("");
+    //check all input
+    if (checkInput() == true) {
+      return;
+    }
+    //insert input
+    insertInput();
+    //start to post api
+    setCreateRepairReportLoading(true);
+    //check loading
+    await delay();
+    try {
+      const res = await myapi.post("/RepairReport", repairReport, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorCreateRepairReport(
+          "We can't process your request. Please submit again."
+        );
+        setCreateRepairReportLoading(false);
+        return;
+      }
+      setCreateRepairReportLoading(false);
+      router.push(`/task/${task.id}/repair-report/${res.data.id}`);
+    } catch (error) {
+      console.error(error);
+      setErrorCreateRepairReport(
+        "We can't process your request. Please submit again."
+      );
+      setCreateRepairReportLoading(false);
+    }
+  }
+
+  if (task.repairReportId !== 0) {
     redirect(`/task/${task.id}/repair-report/${task.repairReportId}`);
   }
 
   return (
     <div className="flex flex-col h-[85vh]">
-      {getTaskLoading ? (
+      {getTaskLoading || getModelLoading ? (
         <>
           <HeaderDisplay label="CREATE REPAIR REPORT" />
           <span>Loading...</span>
         </>
-      ) : errorLoadTask !== "" ? (
+      ) : errorLoadTask || errorModel !== "" ? (
         <>
           <HeaderDisplay label="CREATE REPAIR REPORT" />
           <span>{errorLoadTask}</span>
@@ -185,66 +290,166 @@ export default function RepairReportCreate() {
               <></>
             )}
           </HeaderDisplay>
-
           <div className="overflow-auto">
-            <div className="w-full">
-              <AppFormPanel label="DECOMMISSIONED EQUIPMENT">
-                <AppTetxtInput
-                  label="SERIAL NUMBER"
-                  value={repairReport.decommissionedSerial}
-                  onTextChange={(decommissionedSerial) =>
-                    setRepairReport((pre) => ({ ...pre, decommissionedSerial }))
-                  }
-                  style={
-                    requireInput !== "" &&
-                    repairReport.decommissionedSerial == ""
-                      ? "border-red-500 border-2"
-                      : ""
-                  }
-                />
-                <AppTetxtInput
-                  label="PARCEL NUMBER"
-                  value={repairReport.decommissionedParcel}
-                  onTextChange={(decommissionedParcel) =>
-                    setRepairReport((pre) => ({ ...pre, decommissionedParcel }))
-                  }
-                  style={
-                    requireInput !== "" &&
-                    repairReport.decommissionedParcel == ""
-                      ? "border-red-500 border-2"
-                      : ""
-                  }
-                />
-              </AppFormPanel>
-            </div>
-            <div className="w-full mt-14">
-              <AppFormPanel label="COMMISSIONED EQUIPMENT">
-                <AppTetxtInput
-                  label="SERIAL NUMBER"
-                  value={repairReport.commissionedSerial}
-                  onTextChange={(commissionedSerial) =>
-                    setRepairReport((pre) => ({ ...pre, commissionedSerial }))
-                  }
-                  style={
-                    requireInput !== "" && repairReport.commissionedSerial == ""
-                      ? "border-red-500 border-2"
-                      : ""
-                  }
-                />
-                <AppTetxtInput
-                  label="PARCEL NUMBER"
-                  value={repairReport.commissionedParcel}
-                  onTextChange={(commissionedParcel) =>
-                    setRepairReport((pre) => ({ ...pre, commissionedParcel }))
-                  }
-                  style={
-                    requireInput !== "" && repairReport.commissionedParcel == ""
-                      ? "border-red-500 border-2"
-                      : ""
-                  }
-                />
-              </AppFormPanel>
-            </div>
+            {modelDetail.map((c) => {
+              return (
+                <div key={c.name} className="pb-14">
+                  <div className="text-2xl font-semibold pb-5">{c.name}</div>
+                  <div className="w-full">
+                    <AppRepairPanel label="DECOMMISSIONED EQUIPMENT">
+                      <AppTextInput
+                        label="SERIAL NUMBER"
+                        value={c.decommissionedSerial ?? ""}
+                        onTextChange={(decommissionedSerial) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                decommissionedSerial,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.decommissionedSerial == null ||
+                            c.decommissionedSerial == "")
+                            ? true
+                            : false
+                        }
+                      />
+                      <AppTextInput
+                        label="PARCEL NUMBER"
+                        value={c.decommissionedParcel ?? ""}
+                        onTextChange={(decommissionedParcel) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                decommissionedParcel,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.decommissionedParcel == null ||
+                            c.decommissionedParcel == "")
+                            ? true
+                            : false
+                        }
+                      />
+                      <AppTextInput
+                        label="NATIONAL SERIAL NUMBER"
+                        value={c.decommissionedNationalSerialNumber ?? ""}
+                        onTextChange={(decommissionedNationalSerialNumber) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                decommissionedNationalSerialNumber,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.decommissionedNationalSerialNumber == null ||
+                            c.decommissionedNationalSerialNumber == "")
+                            ? true
+                            : false
+                        }
+                      />
+                    </AppRepairPanel>
+                  </div>
+                  <div className="w-full mt-7">
+                    <AppRepairPanel label="COMMISSIONED EQUIPMENT">
+                      <AppTextInput
+                        label="SERIAL NUMBER"
+                        value={c.commissionedSerial ?? ""}
+                        onTextChange={(commissionedSerial) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                commissionedSerial,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.commissionedSerial == null ||
+                            c.commissionedSerial == "")
+                            ? true
+                            : false
+                        }
+                      />
+                      <AppTextInput
+                        label="PARCEL NUMBER"
+                        value={c.commissionedParcel ?? ""}
+                        onTextChange={(commissionedParcel) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                commissionedParcel,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.commissionedParcel == null ||
+                            c.commissionedParcel == "")
+                            ? true
+                            : false
+                        }
+                      />
+                      <AppTextInput
+                        label="NATIONAL SERIAL NUMBER"
+                        value={c.commissionedNationalSerialNumber ?? ""}
+                        onTextChange={(commissionedNationalSerialNumber) =>
+                          setModelDetail((prevState) =>
+                            prevState.map((d) => {
+                              if (d.name !== c.name) {
+                                return d;
+                              }
+                              return {
+                                ...d,
+                                commissionedNationalSerialNumber,
+                              };
+                            })
+                          )
+                        }
+                        inputAlert={
+                          requireInput !== "" &&
+                          (c.commissionedNationalSerialNumber == null ||
+                            c.commissionedNationalSerialNumber == "")
+                            ? true
+                            : false
+                        }
+                      />
+                    </AppRepairPanel>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           {/*button*/}
           <div className="mt-16 flex justify-end">
@@ -255,7 +460,7 @@ export default function RepairReportCreate() {
               label="Create"
               iconRight={<AddCreateIcon />}
               disableButton={createRepairReportLoading}
-              onClick={createRepairReport}
+              onClick={() => createRepairReport()}
             />
           </div>
         </>

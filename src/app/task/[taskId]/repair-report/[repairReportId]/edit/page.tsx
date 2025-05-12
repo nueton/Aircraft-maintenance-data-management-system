@@ -13,34 +13,35 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { delay } from "@/libs/delay";
 import { myapi } from "@/services/myapi";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import AppRepairPanel from "@/components/AppRepairPanel";
 
 type RepairReport = {
   id: number;
-  decommissionedSerial: string;
-  decommissionedParcel: string;
-  commissionedSerial: string;
-  commissionedParcel: string;
   repairStatus: number;
   createdTimeRepair: Date;
   taskReportId: number;
   changeStatusUserId: string;
 };
 
-type Task = {
-  id: number;
-  taskStatus: number;
+type EachSystem = {
+  name: string;
+  decommissionedSerial: string;
+  decommissionedParcel: string;
+  decommissionedNationalSerialNumber: string;
+  commissionedSerial: string;
+  commissionedParcel: string;
+  commissionedNationalSerialNumber: string;
 };
 
 export default function Home() {
+  //check date
+  const [check, setCheck] = useState(false);
+
   //repair id, get repair
   const { repairReportId } = useParams<{ repairReportId: string }>();
   const [repairReport, setRepairReport] = useState<RepairReport>({
     id: 0,
-    decommissionedSerial: "",
-    decommissionedParcel: "",
-    commissionedSerial: "",
-    commissionedParcel: "",
     repairStatus: 0,
     createdTimeRepair: new Date(),
     taskReportId: 0,
@@ -48,58 +49,135 @@ export default function Home() {
   });
   const [getRepairReportLoading, setGetRepairReportLoading] = useState(false);
   const [errorLoadRepairReport, setErrorLoadRepairReport] = useState("");
-  //task from repair id for update state
-  const [task, setTask] = useState<Task>({
-    id: 0,
-    taskStatus: 0,
-  });
-  const [getTaskLoading, setGetTaskLoading] = useState(false);
-  const [errorLoadTask, setErrorLoadTask] = useState("");
+
+  //get model
+  const [modelDetail, setModelDetail] = useState<EachSystem[]>([]);
+  const [getModelLoading, setGetModelLoading] = useState(false);
+  const [errorModel, setErrorModel] = useState("");
+
   //save loading
   const [saveRepairReportLoading, setSaveRepairReportLoading] = useState(false);
   const [errorSaveRepairReport, setErrorSaveRepairReport] = useState("");
-  //select status
-  const [selectStatusId, setselectStatusId] = useState({ id: 0 });
+
   const statusUpdate = [
     {
-      id: 5,
+      id: 6,
       name: "Approved Repair Task",
     },
     {
-      id: 6,
+      id: 7,
       name: "Rejected",
     },
   ];
-  const selectStatusName =
-    selectStatusId.id !== 0
-      ? statusUpdate.find((c) => c.id === selectStatusId.id)?.name
-      : "Select Status";
+
   //disabled button
   const [requiredInput, setRequiredInput] = useState("");
 
   const router = useRouter();
 
+  useEffect(() => {
+    CheckDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   //get repair detail
   useEffect(() => {
-    if (repairReportId) {
+    if (check && repairReportId) {
       getRepairReport(Number(repairReportId));
+      getSystems(Number(repairReportId));
     }
-  }, [repairReportId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
 
-  //use id from repair report to get task status
-  useEffect(() => {
-    if (repairReport.taskReportId) {
-      getTask(Number(repairReport.taskReportId));
+  async function CheckDate() {
+    try {
+      const res = await myapi.get(
+        `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      localStorage.setItem("refreshTokenExpiryTime", res.data);
+      const checking =
+        new Date(moment(Date.now()).toISOString()) >
+        new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
+      if (checking) {
+        localStorage.clear();
+        router.push("/login");
+        return false;
+      }
+      if (localStorage.getItem("role") !== "admin") {
+        router.back();
+        return false;
+      }
+      setCheck(true);
+      return true;
+    } catch (error) {
+      console.log(error);
     }
-  }, [repairReport.taskReportId]);
+  }
+
+  //get repair report detail
+  async function getRepairReport(id: number) {
+    setGetRepairReportLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/RepairReport/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorLoadRepairReport("Error loading repair report");
+        setGetRepairReportLoading(false);
+        return;
+      }
+      setRepairReport(res.data);
+      setGetRepairReportLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorLoadRepairReport("Error loading repair report");
+      setGetRepairReportLoading(false);
+    }
+  }
+
+  //get system report detail
+  async function getSystems(id: number) {
+    setGetModelLoading(true);
+    await delay();
+    try {
+      const res = await myapi.get(`/RepairReport/system/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (res.status !== 200) {
+        setErrorModel("Error loading repair report");
+        setGetModelLoading(false);
+        return;
+      }
+      setModelDetail(res.data);
+      setGetModelLoading(false);
+    } catch (error) {
+      console.error(error);
+      setErrorModel("Error loading repair report");
+      setGetModelLoading(false);
+    }
+  }
 
   //save repair report
   async function saveRepairReport() {
+    const dateCheck = await CheckDate();
+    if (dateCheck == false) {
+      return;
+    }
     //For second attmept
     setErrorSaveRepairReport("");
     setRequiredInput("");
     //select status or not
-    if (selectStatusId.id === 0) {
+    if (repairReport.repairStatus == 5) {
       setRequiredInput("Please select status");
       return;
     }
@@ -129,12 +207,6 @@ export default function Home() {
         setSaveRepairReportLoading(false);
         return;
       }
-      //put new status to task status
-      await myapi.put(`/Task/${repairReport.taskReportId}`, task, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
       setSaveRepairReportLoading(false);
       router.push(
         `/task/${repairReport.taskReportId}/repair-report/${repairReport.id}`
@@ -148,74 +220,14 @@ export default function Home() {
     }
   }
 
-  //get repair report detail
-  async function getRepairReport(id: number) {
-    setGetRepairReportLoading(true);
-    await delay();
-    try {
-      const res = await myapi.get(`/RepairReport/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (res.status !== 200) {
-        setErrorLoadRepairReport("Error loading repair report");
-        setGetRepairReportLoading(false);
-        return;
-      }
-      setRepairReport(res.data);
-      setGetRepairReportLoading(false);
-    } catch (error) {
-      console.error(error);
-      setErrorLoadRepairReport("Error loading repair report");
-      setGetRepairReportLoading(false);
-    }
-  }
-
-  //get task
-  async function getTask(id: number) {
-    setGetTaskLoading(true);
-    await delay();
-    try {
-      const res = await myapi.get(`/Task/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (res.status !== 200) {
-        setErrorLoadTask("Error loading task");
-        setGetTaskLoading(false);
-        return;
-      }
-      setTask(res.data);
-      setGetTaskLoading(false);
-    } catch (error) {
-      console.error(error);
-      setErrorLoadTask("Error loading task");
-      setGetTaskLoading(false);
-    }
-  }
-
-  //check token and expire time
-  if (
-    localStorage.getItem("name") == null ||
-    new Date(moment(Date.now()).toISOString()) >
-      new Date(String(localStorage.getItem("refreshTokenExpiryTime")))
-  ) {
-    localStorage.clear();
-    redirect(`/login`);
-  } else if (localStorage.getItem("role") !== "admin") {
-    redirect(`/login`);
-  }
-
   return (
     <div className="flex flex-col h-[85vh]">
-      {getRepairReportLoading || getTaskLoading ? (
+      {getRepairReportLoading || getModelLoading ? (
         <>
           <HeaderDisplay label="EDIT REPAIR REPORT" />
           <span>Loading....</span>
         </>
-      ) : errorLoadRepairReport || errorLoadTask ? (
+      ) : errorLoadRepairReport || errorModel ? (
         <>
           <HeaderDisplay label="EDIT REPAIR REPORT" />
           <span>Error Loading repair report</span>
@@ -228,37 +240,40 @@ export default function Home() {
             </span>
             <Menu>
               <MenuButton className="flex items-center h-10 w-64 self-center pl-5 pr-3 text-lg font-medium text-center text-gray-900 border-gray-900 border-y-[1.5px] border-r-[1.5px] rounded-r-xl stroke-gray-900">
-                <span className="flex-1 mr-1">{selectStatusName}</span>
+                <span className="flex-1 mr-1">
+                  {repairReport.repairStatus == 5
+                    ? "Select Status"
+                    : statusUpdate.find(
+                        (c) => c.id == repairReport.repairStatus
+                      )?.name}
+                </span>
                 <DropdownIcon />
               </MenuButton>
               <MenuItems
                 anchor="bottom"
                 className="w-64 mt-3 border border-gray-300 rounded-lg text-lg text-center bg-white"
               >
-                {statusUpdate.map((c) => {
-                  return (
-                    <div
-                      key={c.id}
-                      onClick={() => {
-                        setselectStatusId({ ...selectStatusId, id: c.id });
-                        setRepairReport({
-                          ...repairReport,
-                          repairStatus: c.id,
-                        });
-                        setTask({
-                          ...task,
-                          taskStatus: c.id,
-                        });
-                      }}
-                    >
-                      <MenuItem>
-                        <a className="block data-[focus]:bg-gray-100 py-2">
-                          {c.name}
-                        </a>
-                      </MenuItem>
-                    </div>
-                  );
-                })}
+                {statusUpdate
+                  .filter((c) => c.id !== repairReport.repairStatus)
+                  .map((c) => {
+                    return (
+                      <div
+                        key={c.id}
+                        onClick={() => {
+                          setRepairReport({
+                            ...repairReport,
+                            repairStatus: c.id,
+                          });
+                        }}
+                      >
+                        <MenuItem>
+                          <a className="block data-[focus]:bg-gray-100 py-2">
+                            {c.name}
+                          </a>
+                        </MenuItem>
+                      </div>
+                    );
+                  })}
               </MenuItems>
             </Menu>
             {errorSaveRepairReport !== "" ? (
@@ -268,7 +283,7 @@ export default function Home() {
             ) : (
               <></>
             )}
-            {requiredInput && selectStatusId.id == 0 ? (
+            {requiredInput && repairReport.repairStatus == 5 ? (
               <span className="ml-5 font-semibold text-red-500">
                 {requiredInput}
               </span>
@@ -277,30 +292,49 @@ export default function Home() {
             )}
           </HeaderDisplay>
           <div className="overflow-auto">
-            <div className="w-full">
-              <AppFormPanel label="DECOMMISSIONED EQUIPMENT">
+            {modelDetail.map((c) => {
+              return (
+                <div key={c.name} className="pb-14">
+                  <div className="text-2xl font-semibold pb-5">{c.name}</div>
+                  <div className="w-full">
+                    <AppRepairPanel label="พัสดุที่ถอด(OUT)">
+                      <ShowTextInput
+                        label="หมายเลขพัสดุ(NSN)"
+                        content={c.decommissionedNationalSerialNumber}
+                      />
+                      <ShowTextInput
+                        label="หมายเลขกำกับพัสดุ(PN)"
+                        content={c.decommissionedParcel}
+                      />
+                      <ShowTextInput
+                        label="หมายเลขพัสดุ(SN)"
+                        content={c.decommissionedSerial}
+                      />
+                    </AppRepairPanel>
+                  </div>
+                  <div className="w-full mt-7">
+                    <AppRepairPanel label="พัสดุที่ติดตั้ง(IN)">
+                      <ShowTextInput
+                        label="หมายเลขพัสดุ(NSN)"
+                        content={c.commissionedNationalSerialNumber}
+                      />
+                      <ShowTextInput
+                        label="หมายเลขกำกับพัสดุ(PN)"
+                        content={c.commissionedParcel}
+                      />
+                      <ShowTextInput
+                        label="หมายเลขพัสดุ(SN)"
+                        content={c.commissionedSerial}
+                      />
+                    </AppRepairPanel>
+                  </div>
+                </div>
+              );
+            })}
+            <div>
+              <AppFormPanel label="INFORMATION">
                 <ShowTextInput
-                  label="SERIAL NUMBER"
-                  content={repairReport.decommissionedSerial}
-                />
-                <ShowTextInput
-                  label="PARCEL NUMBER"
-                  content={repairReport.decommissionedParcel}
-                />
-              </AppFormPanel>
-            </div>
-            <div className="w-full mt-14">
-              <AppFormPanel label="COMMISSIONED EQUIPMENT">
-                <ShowTextInput
-                  label="SERIAL NUMBER"
-                  content={repairReport.commissionedSerial}
-                />
-                <ShowTextInput
-                  label="PARCEL NUMBER"
-                  content={repairReport.commissionedParcel}
-                />
-                <ShowTextInput
-                  label="DATE"
+                  label="สร้างเมื่อ"
                   content={dayjs(repairReport.createdTimeRepair).format(
                     "YYYY-MM-DD HH:mm:ss"
                   )}
@@ -312,7 +346,9 @@ export default function Home() {
       )}
 
       <div className="mt-16 flex justify-end">
-        <Link href={`/task/${task.id}/repair-report/${repairReport.id}`}>
+        <Link
+          href={`/task/${repairReport.taskReportId}/repair-report/${repairReport.id}`}
+        >
           <ActionButton label="Cancle" />
         </Link>
         <ActionButton
