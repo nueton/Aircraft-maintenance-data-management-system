@@ -18,10 +18,7 @@ function Sidepanel() {
   //all user
   function Logout() {
     localStorage.clear();
-    window.location.href = "/login";
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    window.location.replace("/login");
   }
 
   function checkRole() {
