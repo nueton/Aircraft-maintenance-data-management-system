@@ -9,7 +9,9 @@ function Headerpanel({ children }: HeaderpanelProps) {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    getFullName(String(localStorage.getItem("nameIdentifier")));
+    if (localStorage.length !== 0) {
+      getFullName(String(localStorage.getItem("nameIdentifier")));
+    }
   }, []);
 
   async function getFullName(id: string) {

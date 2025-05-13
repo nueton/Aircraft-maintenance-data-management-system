@@ -176,6 +176,10 @@ export default function TaskCreatePage() {
   }, [querySystem, getSystems]);
 
   async function CheckDate() {
+    if (localStorage.length == 0) {
+      router.push("/login");
+      return;
+    }
     try {
       const res = await myapi.get(
         `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
@@ -189,7 +193,7 @@ export default function TaskCreatePage() {
       const checking =
         new Date(moment(Date.now()).toISOString()) >
         new Date(String(localStorage.getItem("refreshTokenExpiryTime")));
-      if (checking) {
+      if (localStorage.getItem("name") == null || checking) {
         localStorage.clear();
         router.push("/login");
         return false;

@@ -87,6 +87,10 @@ export default function RepairReportDeatail() {
   }, [check]);
 
   async function CheckDate() {
+    if (localStorage.length == 0) {
+      router.push("/login");
+      return;
+    }
     try {
       const res = await myapi.get(
         `/Auth/refresh/${localStorage.getItem("nameIdentifier")}`,
